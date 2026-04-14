@@ -22,10 +22,18 @@ Visión a largo plazo: **mundo abierto**, **RPG**, referencia de sandbox tipo **
 | `docs/` | GDD breve, arquitectura, diagramas. |
 | `tools/` | Scripts de automatización o helpers. |
 
+## Jugar (prototipo)
+
+Desde el menú, **Jugar** abre `scenes/gameplay/prototype_playground.tscn`: suelo, cápsula jugador, cámara en tercera persona (**WASD**, **Espacio**, ratón; **Esc** → menú).
+
+## Export / instalador
+
+Resumen en [`docs/packaging.md`](docs/packaging.md): primero **export** de Godot; un instalador tipo Setup es un paso posterior.
+
 ## Próximos pasos sugeridos
 
-- Sustituir el menú placeholder por tema visual anime + navegación con mando/teclado.
-- Añadir escena **gameplay** mínima: personaje 3rd person + suelo + cámara (prototipo, no ciudad completa).
+- Tema UI más “anime” (fuentes, ilustración de fondo, sonido al foco).
+- Mando (input map de Godot) y opciones en **Ajustes**.
 
 ## Licencia
 

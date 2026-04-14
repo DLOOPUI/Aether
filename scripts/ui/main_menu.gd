@@ -1,19 +1,22 @@
 extends Control
 
+const PROTOTYPE_SCENE := &"res://scenes/gameplay/prototype_playground.tscn"
+
 @onready var _btn_play: Button = $Center/Panel/Margin/VBox/BtnPlay
 @onready var _btn_settings: Button = $Center/Panel/Margin/VBox/BtnSettings
 @onready var _btn_quit: Button = $Center/Panel/Margin/VBox/BtnQuit
 
 
 func _ready() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_btn_play.pressed.connect(_on_play_pressed)
 	_btn_settings.pressed.connect(_on_settings_pressed)
 	_btn_quit.pressed.connect(_on_quit_pressed)
+	_btn_play.grab_focus()
 
 
 func _on_play_pressed() -> void:
-	# Siguiente hito: escena gameplay mínima (personaje 3ª persona + suelo).
-	print("Aether: Play — pendiente cargar mundo prototipo.")
+	get_tree().change_scene_to_file(PROTOTYPE_SCENE)
 
 
 func _on_settings_pressed() -> void:

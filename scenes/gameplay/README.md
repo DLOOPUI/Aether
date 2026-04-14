@@ -1,3 +1,1 @@
-Aquí irán escenas del mundo jugable (nivel base, personaje, vehículos, etc.).
-
-Siguiente paso sugerido: `prototype_world.tscn` con `CharacterBody3D`, `Camera3D` (SpringArm) y suelo `StaticBody3D`.
+Escena activa de prueba: `prototype_playground.tscn` (tercera persona + suelo). Añade aquí más niveles o variantes cuando crezca el juego.

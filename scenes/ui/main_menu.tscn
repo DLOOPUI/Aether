@@ -1,6 +1,25 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqm5mainmenu2"]
+[gd_scene load_steps=3 format=3 uid="uid://bqm5mainmenu2"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_main_menu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.09, 0.14, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.91, 0.27, 0.38, 0.55)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 8
+content_margin_top = 8
+content_margin_right = 8
+content_margin_bottom = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.91, 0.27, 0.38, 0.22)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -18,7 +37,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.102, 0.106, 0.18, 1)
+color = Color(0.06, 0.07, 0.11, 1)
 
 [node name="Center" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -29,8 +48,9 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="Margin" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
@@ -45,28 +65,44 @@ theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.98, 0.95, 0.96, 1)
+theme_override_font_sizes/font_size = 38
 text = "AETHER"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.68, 0.78, 1)
 theme_override_font_sizes/font_size = 14
 text = "Mundo abierto • Tercera persona • Estética anime"
 horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 16)
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
 [node name="BtnPlay" type="Button" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-text = "Jugar (próximo: prototipo mundo)"
+theme_override_colors/font_hover_color = Color(1, 0.92, 0.94, 1)
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "Jugar"
 
 [node name="BtnSettings" type="Button" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-text = "Ajustes (pendiente)"
+theme_override_colors/font_hover_color = Color(1, 0.92, 0.94, 1)
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "Ajustes"
 
 [node name="BtnQuit" type="Button" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
+theme_override_colors/font_hover_color = Color(1, 0.92, 0.94, 1)
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "Salir"
+
+[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.48, 0.58, 1)
+theme_override_font_sizes/font_size = 11
+text = "En prototipo: WASD, espacio, ratón; Esc vuelve al menú."
+horizontal_alignment = 1
+autowrap_mode = 2
