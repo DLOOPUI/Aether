@@ -1,6 +1,7 @@
 extends Control
 
 const PROTOTYPE_SCENE := &"res://scenes/gameplay/prototype_playground.tscn"
+const SETTINGS_SCENE := &"res://scenes/ui/settings.tscn"
 
 var _draft: CharacterDraft = CharacterDraft.new()
 
@@ -28,10 +29,28 @@ func _ready() -> void:
 	_wire_main_buttons()
 	_wire_character_page()
 	_fill_character_options()
-	_apply_sao_styles(_main_page)
-	_apply_sao_styles(_char_page)
+	_draft = CharacterStorage.load_draft()
+	_apply_draft_to_options()
+	SaoUi.apply_to_buttons(_main_page)
+	SaoUi.apply_to_buttons(_char_page)
 	_show_main_page()
 	_btn_play.grab_focus()
+
+
+func _apply_draft_to_options() -> void:
+	_safe_select(_opt_gender, _draft.gender_id)
+	_safe_select(_opt_race, _draft.race_id)
+	_safe_select(_opt_top, _draft.top_id)
+	_safe_select(_opt_pants, _draft.pants_id)
+	_safe_select(_opt_shoes, _draft.shoes_id)
+	_safe_select(_opt_hair, _draft.hair_id)
+
+
+func _safe_select(ob: OptionButton, idx: int) -> void:
+	var max_i: int = ob.item_count - 1
+	if max_i < 0:
+		return
+	ob.select(clampi(idx, 0, max_i))
 
 
 func _wire_main_buttons() -> void:
@@ -68,42 +87,6 @@ func _fill_opts(ob: OptionButton, labels: PackedStringArray) -> void:
 	ob.select(0)
 
 
-func _style_flat(bg: Color, border: Color, border_w: int = 1) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.border_color = border
-	sb.set_border_width_all(border_w)
-	sb.set_corner_radius_all(6)
-	sb.content_margin_left = 14
-	sb.content_margin_top = 10
-	sb.content_margin_right = 14
-	sb.content_margin_bottom = 10
-	return sb
-
-
-func _apply_sao_styles(root: Node) -> void:
-	var n := _style_flat(Color(0.08, 0.14, 0.22, 0.42), Color(0.35, 0.72, 0.92, 0.35))
-	var h := _style_flat(Color(0.12, 0.38, 0.58, 0.62), Color(0.45, 0.92, 1.0, 0.95))
-	var p := _style_flat(Color(0.06, 0.22, 0.38, 0.78), Color(0.25, 0.55, 0.75, 1.0))
-	_style_walk(root, n, h, p)
-
-
-func _style_walk(node: Node, n: StyleBoxFlat, h: StyleBoxFlat, p: StyleBoxFlat) -> void:
-	if node is OptionButton:
-		var ob := node as OptionButton
-		ob.add_theme_stylebox_override(&"normal", n.duplicate() as StyleBoxFlat)
-		ob.add_theme_stylebox_override(&"hover", h.duplicate() as StyleBoxFlat)
-		ob.add_theme_stylebox_override(&"pressed", p.duplicate() as StyleBoxFlat)
-	elif node is Button:
-		var b := node as Button
-		b.add_theme_stylebox_override(&"normal", n.duplicate() as StyleBoxFlat)
-		b.add_theme_stylebox_override(&"hover", h.duplicate() as StyleBoxFlat)
-		b.add_theme_stylebox_override(&"pressed", p.duplicate() as StyleBoxFlat)
-		b.add_theme_stylebox_override(&"focus", h.duplicate() as StyleBoxFlat)
-	for c in node.get_children():
-		_style_walk(c, n, h, p)
-
-
 func _show_main_page() -> void:
 	_main_page.visible = true
 	_char_page.visible = false
@@ -121,21 +104,35 @@ func _on_play_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
-	print("Aether: Ajustes (audio / pantalla / controles) — pendiente escena.")
+	get_tree().change_scene_to_file(SETTINGS_SCENE)
 
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()
 
 
+func _sync_draft_from_ui() -> void:
+	_draft.gender_id = _opt_gender.selected
+	_draft.race_id = _opt_race.selected
+	_draft.top_id = _opt_top.selected
+	_draft.pants_id = _opt_pants.selected
+	_draft.shoes_id = _opt_shoes.selected
+	_draft.hair_id = _opt_hair.selected
+
+
 func _on_apply_character_pressed() -> void:
-	print(
-		"Personaje aplicado: género=%s raza=%s torso=%s pantalón=%s"
-		% [
-			_opt_gender.get_item_text(_opt_gender.selected),
-			_opt_race.get_item_text(_opt_race.selected),
-			_opt_top.get_item_text(_opt_top.selected),
-			_opt_pants.get_item_text(_opt_pants.selected),
-		]
-	)
+	_sync_draft_from_ui()
+	var err: Error = CharacterStorage.save_draft(_draft)
+	if err != OK:
+		push_error("No se pudo guardar el personaje: %s" % error_string(err))
+	else:
+		print(
+			"Personaje guardado: género=%s raza=%s torso=%s pantalón=%s"
+			% [
+				_opt_gender.get_item_text(_opt_gender.selected),
+				_opt_race.get_item_text(_opt_race.selected),
+				_opt_top.get_item_text(_opt_top.selected),
+				_opt_pants.get_item_text(_opt_pants.selected),
+			]
+		)
 	_show_main_page()

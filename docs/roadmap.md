@@ -4,8 +4,8 @@ Lista de trabajo y mejoras; no forma parte de la descripción fija del proyecto.
 
 ## Corto plazo
 
-- Escena **Ajustes** (audio, pantalla, sensibilidad de cámara).
-- Vincular `CharacterDraft` a guardado (`user://`) y a vista previa 3D del personaje.
+- Vista previa 3D del personaje al personalizar (y equipar mallas según `CharacterDraft`).
+- Pulir sliders y **CheckBox** en Ajustes (tema SAO coherente).
 - Input de **mando** y navegación por el menú solo con teclado/gamepad.
 
 ## Medio plazo

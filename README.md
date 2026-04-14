@@ -38,7 +38,11 @@ En la escena de prueba `prototype_playground.tscn`: **WASD**, **Espacio**, rató
 
 ## Fondo del menú
 
-Opcional: coloca `menu_background.png` o `menu_background.jpg` en `assets/ui/` (ver `assets/ui/README.md`).
+Por defecto se usa un **gradiente procedural** (atardecer). Opcional: añade `assets/ui/menu_background.png` o `.jpg` para tu propio panorama (ver `assets/ui/README.md`).
+
+## Ajustes
+
+**Ajustes** en el menú abre `scenes/ui/settings.tscn`: volumen maestro, sensibilidad de cámara y pantalla completa. Se guardan en `user://settings.cfg`. El personaje personalizado se guarda en `user://character_draft.tres`.
 
 ## Documentación adicional
 

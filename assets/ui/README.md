@@ -1,3 +1,6 @@
-Coloca aquí el arte del menú.
+# Arte de UI
 
-- **`menu_background.png`** o **`menu_background.jpg`**: imagen panorámica de fondo (1920×1080 o similar). Si no existe, el menú usa un color sólido y un velo oscuro.
+- **`menu_background.png`** o **`menu_background.jpg`** (opcional): si están en esta carpeta, el menú y Ajustes los usan como fondo a pantalla completa.
+- Si no hay imagen, el script `menu_background.gd` dibuja un **cielo procedural** (atardecer) para que el juego se vea bien sin archivos extra.
+
+Puedes sustituir el PNG por cualquier panorama 16:9 (por ejemplo arte anime de paisaje) manteniendo el nombre `menu_background.png`.

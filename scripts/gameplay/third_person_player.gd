@@ -14,6 +14,7 @@ var _pitch: float = deg_to_rad(-12.0)
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_spring_arm.rotation.x = _pitch
+	mouse_sensitivity *= GameSettings.mouse_sensitivity_multiplier
 
 
 func _input(event: InputEvent) -> void:
