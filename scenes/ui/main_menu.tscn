@@ -1,25 +1,25 @@
-[gd_scene load_steps=3 format=3 uid="uid://bqm5mainmenu2"]
+[gd_scene load_steps=4 format=3 uid="uid://bqm5mainmenu2"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_main_menu"]
+[ext_resource type="Script" path="res://scripts/ui/menu_background.gd" id="2_bg"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.08, 0.09, 0.14, 0.92)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_left_panel"]
+bg_color = Color(0.03, 0.06, 0.12, 0.55)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.91, 0.27, 0.38, 0.55)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-content_margin_left = 8
-content_margin_top = 8
-content_margin_right = 8
-content_margin_bottom = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
-bg_color = Color(0.91, 0.27, 0.38, 0.22)
+border_color = Color(0.35, 0.78, 0.95, 0.45)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 6
+content_margin_top = 6
+content_margin_right = 6
+content_margin_bottom = 6
+shadow_color = Color(0.2, 0.6, 0.9, 0.25)
+shadow_size = 6
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -30,79 +30,231 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main_menu")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="BackgroundBase" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.06, 0.07, 0.11, 1)
+mouse_filter = 2
+color = Color(0.04, 0.06, 0.1, 1)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="BackgroundImage" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+script = ExtResource("2_bg")
 
-[node name="Panel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(440, 0)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+[node name="ReadabilityOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.05, 0.12, 0.38)
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel"]
-layout_mode = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 28
+[node name="SafeArea" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 40
+
+[node name="MainLayout" type="HBoxContainer" parent="SafeArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="LeftPanel" type="PanelContainer" parent="SafeArea/MainLayout"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_left_panel")
+
+[node name="Margin" type="MarginContainer" parent="SafeArea/MainLayout/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 28
 
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+[node name="MainColumn" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 18
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Title" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.95, 0.96, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.4, 0.6, 0.55)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 36
 text = "AETHER"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Subtitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.68, 0.78, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.65, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 13
 text = "Mundo abierto • Tercera persona • Estética anime"
 horizontal_alignment = 1
+autowrap_mode = 2
 
-[node name="Spacer" type="Control" parent="Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 12)
+[node name="MainPage" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
 layout_mode = 2
+theme_override_constants/separation = 10
 
-[node name="BtnPlay" type="Button" parent="Center/Panel/Margin/VBox"]
+[node name="BtnPlay" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
 layout_mode = 2
-theme_override_colors/font_hover_color = Color(1, 0.92, 0.94, 1)
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
 text = "Jugar"
 
-[node name="BtnSettings" type="Button" parent="Center/Panel/Margin/VBox"]
+[node name="BtnCustomize" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
 layout_mode = 2
-theme_override_colors/font_hover_color = Color(1, 0.92, 0.94, 1)
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Personalizar personaje"
+
+[node name="BtnSettings" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
 text = "Ajustes"
 
-[node name="BtnQuit" type="Button" parent="Center/Panel/Margin/VBox"]
+[node name="BtnQuit" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
 layout_mode = 2
-theme_override_colors/font_hover_color = Color(1, 0.92, 0.94, 1)
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
 text = "Salir"
 
-[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Hint" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.45, 0.48, 0.58, 1)
+theme_override_colors/font_color = Color(0.5, 0.62, 0.75, 1)
 theme_override_font_sizes/font_size = 11
-text = "En prototipo: WASD, espacio, ratón; Esc vuelve al menú."
+text = "Prototipo: WASD, espacio, ratón · Esc menú"
 horizontal_alignment = 1
 autowrap_mode = 2
+
+[node name="CharacterPage" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CharTitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Personalización"
+horizontal_alignment = 1
+
+[node name="CharSubtitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "Género, raza, ropa — se conectará al modelo 3D más adelante."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Form" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LG" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Género"
+
+[node name="OptGender" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+
+[node name="LR" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Raza"
+
+[node name="OptRace" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+
+[node name="LT" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Parte superior"
+
+[node name="OptTop" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+
+[node name="LP" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Pantalón / falda"
+
+[node name="OptPants" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+
+[node name="LS" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Calzado"
+
+[node name="OptShoes" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+
+[node name="LH" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Cabello"
+
+[node name="OptHair" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+
+[node name="FooterRow" type="HBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BtnBack" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/FooterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+text = "← Menú"
+
+[node name="BtnApply" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/FooterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+text = "Guardar"
+
+[node name="Spacer" type="Control" parent="SafeArea/MainLayout"]
+layout_mode = 2
+size_flags_horizontal = 3

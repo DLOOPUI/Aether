@@ -1,40 +1,55 @@
 # Aether
 
-Visión a largo plazo: **mundo abierto**, **RPG**, referencia de sandbox tipo **GTA** en tercera persona, estética **anime**. Motor: **Godot 4**. *(MMO u otros sistemas masivos: fuera del MVP hasta tener núcleo sólido.)*
+Proyecto en **Godot 4.6** (Forward Plus): acción en **tercera persona**, mundo **abierto**, tono **anime** y referencia de loop tipo **sandbox urbano / RPG** (sin comprometer aún sistemas online masivos).
 
-## Requisitos
+## Cómo abrir el proyecto
 
-- [Godot 4.3+](https://godotengine.org/download) (Forward Plus recomendado para 3D).
+1. Clona el repositorio.
+2. Abre la carpeta del proyecto en **Godot 4.6** (importar si hace falta).
+3. Escena principal: `scenes/ui/main_menu.tscn`. Ejecución: **F5**.
 
-## Cómo abrir
+## Árbol de carpetas
 
-1. Clona el repo.
-2. En Godot: **Import** → selecciona la carpeta que contiene `project.godot`.
-3. Pulsa **Run** (F5): arranca en el **menú principal**.
+```
+Aether/
+├── project.godot
+├── icon.svg
+├── scenes/
+│   ├── ui/                    # Menús, HUD, pantallas
+│   └── gameplay/              # Niveles y escenas jugables 3D
+├── scripts/
+│   ├── core/                  # Datos compartidos, constantes, recursos
+│   ├── ui/                    # Lógica de interfaz
+│   ├── gameplay/              # Jugador, control de cámara, prototipos
+│   └── systems/               # Reglas globales (cuando existan)
+├── assets/
+│   ├── ui/                    # Fondos del menú, elementos 2D de UI
+│   ├── art/                   # Modelos, texturas, materiales
+│   ├── audio/                 # Música y SFX
+│   └── fonts/                 # Tipografías
+├── docs/                      # GDD, arquitectura, diagramas, empaquetado
+├── tools/                     # Scripts fuera del runtime (export, utilidades)
+└── .github/workflows/         # CI (placeholder hasta definir pipeline)
+```
 
-## Estructura del repo
+## Controles (prototipo de play)
 
-| Ruta | Uso |
-|------|-----|
-| `scenes/` | Escenas `.tscn` (UI, gameplay, niveles). |
-| `scripts/` | Código GDScript por dominio (`core`, `ui`, `systems`). |
-| `assets/` | Arte, audio, fuentes (considera **Git LFS** para binarios pesados). |
-| `docs/` | GDD breve, arquitectura, diagramas. |
-| `tools/` | Scripts de automatización o helpers. |
+En la escena de prueba `prototype_playground.tscn`: **WASD**, **Espacio**, ratón; **Esc** vuelve al menú.
 
-## Jugar (prototipo)
+## Fondo del menú
 
-Desde el menú, **Jugar** abre `scenes/gameplay/prototype_playground.tscn`: suelo, cápsula jugador, cámara en tercera persona (**WASD**, **Espacio**, ratón; **Esc** → menú).
+Opcional: coloca `menu_background.png` o `menu_background.jpg` en `assets/ui/` (ver `assets/ui/README.md`).
 
-## Export / instalador
+## Documentación adicional
 
-Resumen en [`docs/packaging.md`](docs/packaging.md): primero **export** de Godot; un instalador tipo Setup es un paso posterior.
-
-## Próximos pasos sugeridos
-
-- Tema UI más “anime” (fuentes, ilustración de fondo, sonido al foco).
-- Mando (input map de Godot) y opciones en **Ajustes**.
+| Archivo | Contenido |
+|---------|-----------|
+| [`docs/gdd-one-pager.md`](docs/gdd-one-pager.md) | Diseño en una página |
+| [`docs/architecture.md`](docs/architecture.md) | Convenciones de código y escenas |
+| [`docs/diagrams/`](docs/diagrams/) | Diagramas (estados, loop) |
+| [`docs/packaging.md`](docs/packaging.md) | Export e instaladores |
+| [`docs/roadmap.md`](docs/roadmap.md) | Líneas de trabajo y mejoras previstas |
 
 ## Licencia
 
-Por definir (añade `LICENSE` cuando el equipo elija una).
+Por definir.
