@@ -1,0 +1,24 @@
+# Godot 4
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+
+# Builds
+build/
+exports/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*~
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Optional: descomenta si usas Git LFS solo para binarios y quieres ignorar duplicados locales
+# *.import

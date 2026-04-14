@@ -1,0 +1,15 @@
+# Renombra y amplía cuando tengáis Godot en CI (headless export o lint).
+# Ver: https://docs.godotengine.org/en/stable/tutorials/ci/index.html
+name: placeholder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Placeholder
+        run: echo "Añade aquí export o verificación Godot."

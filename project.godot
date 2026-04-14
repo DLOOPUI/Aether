@@ -1,0 +1,22 @@
+; Godot 4 — Aether
+; Abre esta carpeta como proyecto en Godot 4.2+
+
+config_version=5
+
+[application]
+
+config/name="Aether"
+config/description="Open-world third-person action — visión GTA-like, estética anime."
+run/main_scene="res://scenes/ui/main_menu.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
