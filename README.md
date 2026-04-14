@@ -1,6 +1,6 @@
 # Aether
 
-Juego de **mundo abierto** en **tercera persona**, inspiración tipo **GTA**, estética **anime**. Motor: **Godot 4**.
+Visión a largo plazo: **mundo abierto**, **RPG**, referencia de sandbox tipo **GTA** en tercera persona, estética **anime**. Motor: **Godot 4**. *(MMO u otros sistemas masivos: fuera del MVP hasta tener núcleo sólido.)*
 
 ## Requisitos
 
