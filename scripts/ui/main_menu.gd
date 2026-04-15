@@ -3,24 +3,32 @@ extends Control
 const PROTOTYPE_SCENE := &"res://scenes/gameplay/prototype_playground.tscn"
 const SETTINGS_SCENE := &"res://scenes/ui/settings.tscn"
 
+const _FORM_PREFIX := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form/"
+const _BODY_SLIDERS_PATH := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Cuerpo/MarginBody/BodySliders"
+
 var _draft: CharacterDraft = CharacterDraft.new()
+var _body_sliders: Dictionary = {}
 
 @onready var _main_page: Control = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage
 @onready var _char_page: Control = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage
+@onready var _left_panel: PanelContainer = $SafeArea/MainLayout/LeftPanel
+@onready var _spacer: Control = $SafeArea/MainLayout/Spacer
+@onready var _left_column: VBoxContainer = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn
 
 @onready var _btn_play: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnPlay
 @onready var _btn_customize: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnCustomize
 @onready var _btn_settings: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnSettings
 @onready var _btn_quit: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnQuit
 
-@onready var _opt_gender: OptionButton = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form/OptGender
-@onready var _opt_race: OptionButton = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form/OptRace
-@onready var _opt_top: OptionButton = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form/OptTop
-@onready var _opt_pants: OptionButton = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form/OptPants
-@onready var _opt_shoes: OptionButton = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form/OptShoes
-@onready var _opt_hair: OptionButton = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form/OptHair
-@onready var _btn_back: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/FooterRow/BtnBack
-@onready var _btn_apply: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/FooterRow/BtnApply
+@onready var _opt_gender: OptionButton = get_node(_FORM_PREFIX + "OptGender")
+@onready var _opt_race: OptionButton = get_node(_FORM_PREFIX + "OptRace")
+@onready var _opt_top: OptionButton = get_node(_FORM_PREFIX + "OptTop")
+@onready var _opt_pants: OptionButton = get_node(_FORM_PREFIX + "OptPants")
+@onready var _opt_shoes: OptionButton = get_node(_FORM_PREFIX + "OptShoes")
+@onready var _opt_hair: OptionButton = get_node(_FORM_PREFIX + "OptHair")
+@onready var _btn_back: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow/BtnBack
+@onready var _btn_apply: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow/BtnApply
+@onready var _body_sliders_root: VBoxContainer = get_node(_BODY_SLIDERS_PATH)
 
 
 func _ready() -> void:
@@ -29,12 +37,67 @@ func _ready() -> void:
 	_wire_main_buttons()
 	_wire_character_page()
 	_fill_character_options()
+	_build_body_sliders()
 	_draft = CharacterStorage.load_draft()
 	_apply_draft_to_options()
 	SaoUi.apply_to_buttons(_main_page)
-	SaoUi.apply_to_buttons(_char_page)
+	SaoUi.apply_to_buttons(_left_column)
 	_show_main_page()
 	_btn_play.grab_focus()
+
+
+func _build_body_sliders() -> void:
+	var labels: PackedStringArray = [
+		"Altura",
+		"Complexión",
+		"Cabeza",
+		"Brazos",
+		"Piernas",
+		"Tono piel",
+		"Tono pelo",
+	]
+	var props: Array[StringName] = [
+		&"height_01",
+		&"build_01",
+		&"head_size_01",
+		&"arm_length_01",
+		&"leg_length_01",
+		&"skin_tone_01",
+		&"hair_tone_01",
+	]
+	for i in labels.size():
+		var lb := Label.new()
+		lb.text = labels[i]
+		lb.add_theme_color_override(&"font_color", Color(0.7, 0.88, 1.0))
+		lb.add_theme_font_size_override(&"font_size", 12)
+		_body_sliders_root.add_child(lb)
+		var s := HSlider.new()
+		s.min_value = 0.0
+		s.max_value = 1.0
+		s.step = 0.01
+		s.custom_minimum_size.y = 22
+		var prop: StringName = props[i]
+		s.value_changed.connect(func(v: float) -> void: _on_body_slider(prop, v))
+		_body_sliders_root.add_child(s)
+		_body_sliders[prop] = s
+
+
+func _on_body_slider(prop: StringName, v: float) -> void:
+	match String(prop):
+		"height_01":
+			_draft.height_01 = v
+		"build_01":
+			_draft.build_01 = v
+		"head_size_01":
+			_draft.head_size_01 = v
+		"arm_length_01":
+			_draft.arm_length_01 = v
+		"leg_length_01":
+			_draft.leg_length_01 = v
+		"skin_tone_01":
+			_draft.skin_tone_01 = v
+		"hair_tone_01":
+			_draft.hair_tone_01 = v
 
 
 func _apply_draft_to_options() -> void:
@@ -44,6 +107,19 @@ func _apply_draft_to_options() -> void:
 	_safe_select(_opt_pants, _draft.pants_id)
 	_safe_select(_opt_shoes, _draft.shoes_id)
 	_safe_select(_opt_hair, _draft.hair_id)
+	_set_body_slider(&"height_01", _draft.height_01)
+	_set_body_slider(&"build_01", _draft.build_01)
+	_set_body_slider(&"head_size_01", _draft.head_size_01)
+	_set_body_slider(&"arm_length_01", _draft.arm_length_01)
+	_set_body_slider(&"leg_length_01", _draft.leg_length_01)
+	_set_body_slider(&"skin_tone_01", _draft.skin_tone_01)
+	_set_body_slider(&"hair_tone_01", _draft.hair_tone_01)
+
+
+func _set_body_slider(prop: StringName, v: float) -> void:
+	var s: HSlider = _body_sliders.get(prop) as HSlider
+	if s:
+		s.set_value_no_signal(v)
 
 
 func _safe_select(ob: OptionButton, idx: int) -> void:
@@ -63,12 +139,21 @@ func _wire_main_buttons() -> void:
 func _wire_character_page() -> void:
 	_btn_back.pressed.connect(_show_main_page)
 	_btn_apply.pressed.connect(_on_apply_character_pressed)
-	_opt_gender.item_selected.connect(func(i: int) -> void: _draft.gender_id = i)
-	_opt_race.item_selected.connect(func(i: int) -> void: _draft.race_id = i)
-	_opt_top.item_selected.connect(func(i: int) -> void: _draft.top_id = i)
-	_opt_pants.item_selected.connect(func(i: int) -> void: _draft.pants_id = i)
-	_opt_shoes.item_selected.connect(func(i: int) -> void: _draft.shoes_id = i)
-	_opt_hair.item_selected.connect(func(i: int) -> void: _draft.hair_id = i)
+	_opt_gender.item_selected.connect(_on_identity_changed)
+	_opt_race.item_selected.connect(_on_identity_changed)
+	_opt_top.item_selected.connect(_on_identity_changed)
+	_opt_pants.item_selected.connect(_on_identity_changed)
+	_opt_shoes.item_selected.connect(_on_identity_changed)
+	_opt_hair.item_selected.connect(_on_identity_changed)
+
+
+func _on_identity_changed(_i: int = 0) -> void:
+	_draft.gender_id = _opt_gender.selected
+	_draft.race_id = _opt_race.selected
+	_draft.top_id = _opt_top.selected
+	_draft.pants_id = _opt_pants.selected
+	_draft.shoes_id = _opt_shoes.selected
+	_draft.hair_id = _opt_hair.selected
 
 
 func _fill_character_options() -> void:
@@ -90,12 +175,18 @@ func _fill_opts(ob: OptionButton, labels: PackedStringArray) -> void:
 func _show_main_page() -> void:
 	_main_page.visible = true
 	_char_page.visible = false
+	_spacer.visible = true
+	_left_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_left_panel.custom_minimum_size = Vector2(400, 0)
 	_btn_play.grab_focus()
 
 
 func _on_customize_pressed() -> void:
 	_main_page.visible = false
 	_char_page.visible = true
+	_spacer.visible = false
+	_left_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_left_panel.custom_minimum_size = Vector2(520, 0)
 	_btn_back.grab_focus()
 
 
@@ -118,6 +209,13 @@ func _sync_draft_from_ui() -> void:
 	_draft.pants_id = _opt_pants.selected
 	_draft.shoes_id = _opt_shoes.selected
 	_draft.hair_id = _opt_hair.selected
+	_draft.height_01 = float(_body_sliders[&"height_01"].value)
+	_draft.build_01 = float(_body_sliders[&"build_01"].value)
+	_draft.head_size_01 = float(_body_sliders[&"head_size_01"].value)
+	_draft.arm_length_01 = float(_body_sliders[&"arm_length_01"].value)
+	_draft.leg_length_01 = float(_body_sliders[&"leg_length_01"].value)
+	_draft.skin_tone_01 = float(_body_sliders[&"skin_tone_01"].value)
+	_draft.hair_tone_01 = float(_body_sliders[&"hair_tone_01"].value)
 
 
 func _on_apply_character_pressed() -> void:

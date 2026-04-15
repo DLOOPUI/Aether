@@ -1,15 +1,8 @@
-# Vista previa procedural (estilo ARK)
+# Personalización de personaje (menú)
 
-Escena **aislada**: `scenes/character/character_preview_ark.tscn`
+En **Personalizar personaje** hay dos pestañas:
 
-- Modelo **solo con primitivas** (cápsulas + esferas) generado en `scripts/character/procedural_humanoid.gd`.
-- **Sliders** (altura, complexión, cabeza, brazos, piernas, tono de piel y pelo) modifican `CharacterDraft` y se pueden **guardar** en `user://character_draft.tres` igual que en el menú.
-- **Click derecho** arrastra la cámara alrededor del personaje. **Esc** vuelve al menú principal.
+- **Identidad**: listas (género, raza, ropa, etc.).
+- **Cuerpo**: sliders de proporciones y tonos; los valores se guardan en `CharacterDraft` (`user://character_draft.tres`).
 
-## Cómo probar
-
-En Godot: abre la escena → **Escena actual como principal** temporalmente, o **Ejecutar escena actual** (F6).
-
-## Integración opcional (cuando quieras)
-
-Desde tu menú, un botón puede hacer `get_tree().change_scene_to_file("res://scenes/character/character_preview_ark.tscn")` sin tocar esta escena.
+No hay vista 3D integrada en el menú por ahora: cuando tengáis un **modelo importado** (GLTF/GLB), podréis mostrarlo en un `SubViewport` o en la escena de juego usando los mismos datos guardados.
