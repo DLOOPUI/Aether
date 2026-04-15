@@ -1,14 +1,43 @@
 [gd_scene format=3 uid="uid://261h5l6q5bir"]
 
 [ext_resource type="Script" uid="uid://dd5pyol01y7j4" path="res://scripts/gameplay/third_person_player.gd" id="1_wgl7f"]
+[ext_resource type="ArrayMesh" uid="uid://b3ffcn2yarcat" path="res://assets/models/obj/Link.obj" id="2_hrnqq"]
+[ext_resource type="Texture2D" uid="uid://dayg886pv664c" path="res://assets/models/obj/Link_MI_body_alb.png" id="3_olumy"]
+[ext_resource type="Texture2D" uid="uid://cr4vdpn3hh4hu" path="res://assets/models/obj/Link_MI_eye_alb.png" id="4_xxmvi"]
+[ext_resource type="Texture2D" uid="uid://c02oin8hmer1" path="res://assets/models/obj/Link_MI_ear_alb.png" id="5_xwg0q"]
+[ext_resource type="Texture2D" uid="uid://dpcxsu3tadjxy" path="res://assets/models/obj/Link_MI_mouth_alb.png" id="6_efdaw"]
+[ext_resource type="Texture2D" uid="uid://c7u5886ihd7vu" path="res://assets/models/obj/Link_MI_hair_alb.png" id="7_7j5wu"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.35
-height = 1.6
+radius = 0.5336914
+height = 2.238855
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
-radius = 0.35
-height = 1.6
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hkk1c"]
+albedo_texture = ExtResource("3_olumy")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1fndr"]
+albedo_texture = ExtResource("3_olumy")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q4xlb"]
+albedo_texture = ExtResource("4_xxmvi")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pkefj"]
+albedo_texture = ExtResource("3_olumy")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e0m2s"]
+albedo_texture = ExtResource("5_xwg0q")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fx2kx"]
+albedo_texture = ExtResource("6_efdaw")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5llx1"]
+albedo_texture = ExtResource("7_7j5wu")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i71qe"]
+albedo_texture = ExtResource("7_7j5wu")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pw31f"]
+albedo_texture = ExtResource("3_olumy")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wgl7f"]
 
@@ -17,10 +46,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 script = ExtResource("1_wgl7f")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=904745982]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.963153, 0)
 shape = SubResource("CapsuleShape3D_body")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1075451378]
-mesh = SubResource("CapsuleMesh_body")
+transform = Transform3D(-0.745, 0, 1.12491875e-07, 0, 0.745, 0, -1.12491875e-07, 0, -0.745, 0, -2, 0)
+mesh = ExtResource("2_hrnqq")
+surface_material_override/0 = SubResource("StandardMaterial3D_hkk1c")
+surface_material_override/1 = SubResource("StandardMaterial3D_1fndr")
+surface_material_override/2 = SubResource("StandardMaterial3D_q4xlb")
+surface_material_override/3 = SubResource("StandardMaterial3D_pkefj")
+surface_material_override/4 = SubResource("StandardMaterial3D_e0m2s")
+surface_material_override/5 = SubResource("StandardMaterial3D_fx2kx")
+surface_material_override/6 = SubResource("StandardMaterial3D_5llx1")
+surface_material_override/7 = SubResource("StandardMaterial3D_i71qe")
+surface_material_override/8 = SubResource("StandardMaterial3D_pw31f")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=740004709]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8499999, 0)
