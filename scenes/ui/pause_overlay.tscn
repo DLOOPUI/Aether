@@ -1,0 +1,78 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1pauseoverlay"]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_overlay.gd" id="1_pause"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.05, 0.07, 0.12, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.85, 1.0, 0.5)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 20
+content_margin_top = 20
+content_margin_right = 20
+content_margin_bottom = 20
+
+[node name="PauseOverlay" type="CanvasLayer"]
+layer = 50
+script = ExtResource("1_pause")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.45)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(320, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Pausa"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.72, 0.88, 1)
+theme_override_font_sizes/font_size = 11
+text = "Esc reanuda · Opciones · Menú al título"
+horizontal_alignment = 1
+
+[node name="BtnResume" type="Button" parent="Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reanudar"
+
+[node name="BtnSettings" type="Button" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = "Opciones"
+
+[node name="BtnMenu" type="Button" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = "Menú principal"
+
+[connection signal="pressed" from="Center/Panel/VBox/BtnResume" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="Center/Panel/VBox/BtnSettings" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="Center/Panel/VBox/BtnMenu" to="." method="_on_menu_button_pressed"]
