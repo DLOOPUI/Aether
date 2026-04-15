@@ -19,7 +19,6 @@ var _body_sliders: Dictionary = {}
 @onready var _btn_customize: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnCustomize
 @onready var _btn_settings: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnSettings
 @onready var _btn_quit: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnQuit
-@onready var _btn_inventory: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnInventory
 
 @onready var _opt_gender: OptionButton = get_node(_FORM_PREFIX + "OptGender")
 @onready var _opt_race: OptionButton = get_node(_FORM_PREFIX + "OptRace")
@@ -177,7 +176,6 @@ func _wire_main_buttons() -> void:
 	_btn_customize.pressed.connect(_on_customize_pressed)
 	_btn_settings.pressed.connect(_on_settings_pressed)
 	_btn_quit.pressed.connect(_on_quit_pressed)
-	_btn_inventory.pressed.connect(_on_inventory_pressed)
 
 
 func _wire_character_page() -> void:
@@ -244,12 +242,6 @@ func _on_settings_pressed() -> void:
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()
-
-func _on_inventory_pressed() -> void:
-	var inv_ui = load(&"res://scenes/ui/inventory_ui.tscn").instantiate()
-	get_tree().root.add_child(inv_ui)
-	inv_ui.show_inventory()
-
 
 func _sync_draft_from_ui() -> void:
 	_draft.gender_id = _opt_gender.selected

@@ -16,7 +16,7 @@ var _dialogue_by_id: Dictionary = {}
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var ui: CanvasLayer = preload("res://scenes/ui/dialogue_ui.tscn").instantiate()
-	get_tree().root.add_child(ui)
+	call_deferred("add_child", ui)
 	_register_dialogues()
 
 

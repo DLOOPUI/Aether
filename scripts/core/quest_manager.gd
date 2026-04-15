@@ -20,7 +20,7 @@ const REGISTER_SAMPLE_QUESTS := true
 
 func _ready() -> void:
 	_quest_log = preload("res://scenes/ui/quest_log.tscn").instantiate()
-	get_tree().root.add_child(_quest_log)
+	call_deferred("add_child", _quest_log)
 	_quest_log.hide()
 	_register_quest_templates()
 	if REGISTER_SAMPLE_QUESTS:
