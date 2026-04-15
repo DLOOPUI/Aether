@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://261h5l6q5bir"]
+
+[ext_resource type="Script" uid="uid://dd5pyol01y7j4" path="res://scripts/gameplay/third_person_player.gd" id="1_wgl7f"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.35
+height = 1.6
+
+[node name="Player" type="CharacterBody3D" unique_id=962220303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+script = ExtResource("1_wgl7f")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=904745982]
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1075451378]
+mesh = SubResource("CapsuleMesh_body")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=740004709]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+spring_length = 4.5
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D" unique_id=1575518551]
+current = true
