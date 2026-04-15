@@ -25,6 +25,7 @@ config/icon="res://icon.svg"
 UiGamepadSupport="*res://scripts/core/ui_gamepad_support.gd"
 GameSettings="*res://scripts/core/game_settings.gd"
 QuestManager="*res://scripts/core/quest_manager.gd"
+DialogueManager="*res://scripts/core/dialogue_manager.gd"
 
 [display]
 

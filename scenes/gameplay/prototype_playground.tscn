@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://c7proto1play"]
+[gd_scene load_steps=9 format=3 uid="uid://c7proto1play"]
 
 [ext_resource type="PackedScene" uid="uid://261h5l6q5bir" path="res://scenes/gameplay/player.tscn" id="2_678b4"]
 [ext_resource type="Script" uid="uid://cr2v8qpmdanv2" path="res://scripts/gameplay/prototype_playground.gd" id="2_playground"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_overlay.tscn" id="3_pause"]
+[ext_resource type="Script" path="res://scripts/gameplay/interactable_npc.gd" id="4_npc"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
 albedo_color = Color(0.22, 0.24, 0.3, 1)
@@ -12,6 +13,12 @@ size = Vector3(48, 1, 48)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(48, 1, 48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_npc"]
+albedo_color = Color(0.62, 0.42, 0.88, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_npc"]
+size = Vector3(0.85, 1.85, 0.85)
 
 [node name="PrototypePlayground" type="Node3D" unique_id=1605318736]
 script = ExtResource("2_playground")
@@ -32,5 +39,14 @@ shape = SubResource("BoxShape3D_ground")
 
 [node name="Player" parent="." unique_id=962220303 instance=ExtResource("2_678b4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+
+[node name="NpcPlaza" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.925, 4)
+script = ExtResource("4_npc")
+dialogue_id = "plaza_npc_intro"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NpcPlaza"]
+mesh = SubResource("BoxMesh_npc")
+material_override = SubResource("StandardMaterial3D_npc")
 
 [node name="PauseOverlay" parent="." instance=ExtResource("3_pause")]

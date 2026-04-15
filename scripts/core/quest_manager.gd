@@ -1,6 +1,6 @@
 extends Node
 ## Autoload: misiones activas, completadas y recompensas. Emite señales para UI y gameplay.
-## Desactiva REGISTER_SAMPLE_QUESTS en release si no quieres misiones de prueba al iniciar.
+## Plantillas por id para `add_quest_by_template_id` (diálogos, NPCs).
 
 signal quest_added(quest: Quest)
 signal quest_updated(quest: Quest)
@@ -12,6 +12,7 @@ var completed_quests: Array[Quest] = []
 ## Cola simple hasta que exista inventario; consumir con `take_pending_item_rewards()`.
 var pending_item_rewards: Array[String] = []
 
+var _quest_templates: Dictionary = {}
 var _quest_log: CanvasLayer
 
 const REGISTER_SAMPLE_QUESTS := true
@@ -21,8 +22,10 @@ func _ready() -> void:
 	_quest_log = preload("res://scenes/ui/quest_log.tscn").instantiate()
 	get_tree().root.add_child(_quest_log)
 	_quest_log.hide()
+	_register_quest_templates()
 	if REGISTER_SAMPLE_QUESTS:
-		_register_example_quests()
+		add_quest_by_template_id("tutorial_plaza")
+		add_quest_by_template_id("slime_hunt")
 
 
 func toggle_quest_log() -> void:
@@ -34,16 +37,34 @@ func is_quest_log_open() -> bool:
 	return _quest_log != null and _quest_log.visible
 
 
+func register_quest_template(quest: Quest) -> void:
+	if quest.id.is_empty():
+		push_warning("Plantilla de misión sin id.")
+		return
+	_quest_templates[quest.id] = quest
+
+
+## Duplica la plantilla y la añade como misión activa (estado reiniciado).
+func add_quest_by_template_id(template_id: String) -> bool:
+	if not _quest_templates.has(template_id):
+		push_warning("Plantilla de misión no encontrada: %s" % template_id)
+		return false
+	var base: Quest = _quest_templates[template_id] as Quest
+	var q: Quest = base.duplicate(true) as Quest
+	add_quest(q)
+	return true
+
+
 func add_quest(quest: Quest) -> void:
 	if quest.id.is_empty():
 		push_warning("Quest sin id; no se añade.")
 		return
-	for q in active_quests:
-		if q.id == quest.id:
+	for aq in active_quests:
+		if aq.id == quest.id:
 			push_warning("Ya existe misión activa con id: %s" % quest.id)
 			return
-	for q in completed_quests:
-		if q.id == quest.id:
+	for cq in completed_quests:
+		if cq.id == quest.id:
 			push_warning("Misión ya completada: %s" % quest.id)
 			return
 	quest.start()
@@ -96,7 +117,7 @@ func _give_rewards(quest: Quest) -> void:
 				item_reward_granted.emit(sid)
 
 
-func _register_example_quests() -> void:
+func _register_quest_templates() -> void:
 	var q1 := Quest.new()
 	q1.id = "tutorial_plaza"
 	q1.title = "Bienvenida"
@@ -118,6 +139,6 @@ func _register_example_quests() -> void:
 	q3.objectives = ["Enemigo 1/5", "Enemigo 2/5", "Enemigo 3/5", "Enemigo 4/5", "Enemigo 5/5"]
 	q3.rewards = {"gold": 120}
 
-	add_quest(q1)
-	add_quest(q2)
-	add_quest(q3)
+	register_quest_template(q1)
+	register_quest_template(q2)
+	register_quest_template(q3)

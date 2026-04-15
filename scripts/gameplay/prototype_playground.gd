@@ -4,6 +4,8 @@ const MAIN_MENU := &"res://scenes/ui/main_menu.tscn"
 const SETTINGS_SCENE := preload("res://scenes/ui/settings.tscn")
 
 @onready var _pause: CanvasLayer = $PauseOverlay
+@onready var _npc: Node3D = $NpcPlaza
+@onready var _player: Node3D = $Player
 
 
 func _ready() -> void:
@@ -14,7 +16,13 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if DialogueManager.is_dialogue_active():
+		return
 	if get_tree().paused:
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E:
+		if _npc is InteractableNpc and (_npc as InteractableNpc).try_interact(_player.global_position):
+			get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_J:
 		QuestManager.toggle_quest_log()

@@ -84,3 +84,26 @@ func apply_display() -> void:
 
 func get_player_inventory() -> Inventory:
 	return player_inventory
+
+func grant_item_by_id(item_id: String) -> bool:
+	var item: Item
+	match item_id:
+		"apple":
+			item = Apple.new()
+		"potion":
+			item = Potion.new()
+		"apple_badge":
+			item = Item.new()
+			item.name = "Insignia de Manzana"
+			item.description = "Una insignia otorgada por recoger manzanas."
+			item.item_type = "equipment"
+		_:
+			push_error("Item ID desconocido: %s" % item_id)
+			return false
+	
+	return player_inventory.add_item(item)
+
+func process_pending_rewards() -> void:
+	var rewards = QuestManager.take_pending_item_rewards()
+	for rid in rewards:
+		grant_item_by_id(rid)

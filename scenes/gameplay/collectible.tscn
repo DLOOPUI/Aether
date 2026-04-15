@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://collectible123"]
+
+[ext_resource type="Script" path="res://scripts/gameplay/collectible.gd" id="1_script"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.2
+height = 0.4
+
+[node name="Collectible" type="Area3D" script=ExtResource("1_script")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_1")
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.2
+height = 0.4
