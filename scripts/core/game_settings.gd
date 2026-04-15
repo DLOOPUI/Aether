@@ -1,5 +1,7 @@
 extends Node
-## Autoload: volumen maestro, sensibilidad de cámara (multiplicador), pantalla completa.
+## Autoload: volumen maestro, sensibilidad de cámara (multiplicador), pantalla completa, oro (progreso ligero).
+
+signal gold_changed(new_amount: int)
 
 const CFG_PATH := &"user://settings.cfg"
 
@@ -7,6 +9,10 @@ var master_volume_linear: float = 1.0
 ## Multiplicador sobre la sensibilidad base del jugador (0.25 — 2.0).
 var mouse_sensitivity_multiplier: float = 1.0
 var fullscreen: bool = false
+## Moneda simple para recompensas de misiones (hasta inventario dedicado).
+var gold: int = 0
+## Inventario del jugador.
+var player_inventory: Inventory = Inventory.new()
 
 
 func _ready() -> void:
@@ -22,14 +28,25 @@ func load_settings() -> void:
 	master_volume_linear = float(cf.get_value(&"audio", &"master_linear", 1.0))
 	mouse_sensitivity_multiplier = float(cf.get_value(&"input", &"mouse_sensitivity_multiplier", 1.0))
 	fullscreen = bool(cf.get_value(&"display", &"fullscreen", false))
+	gold = int(cf.get_value(&"progress", &"gold", 0))
+	# Inventario se crea nuevo cada sesión por simplicidad
 
 
 func save_settings() -> void:
 	var cf := ConfigFile.new()
+	cf.load(CFG_PATH)
 	cf.set_value(&"audio", &"master_linear", master_volume_linear)
 	cf.set_value(&"input", &"mouse_sensitivity_multiplier", mouse_sensitivity_multiplier)
 	cf.set_value(&"display", &"fullscreen", fullscreen)
+	cf.set_value(&"progress", &"gold", gold)
+	# Nota: inventario no se guarda en settings.cfg por ahora
 	cf.save(CFG_PATH)
+
+
+func add_gold(amount: int) -> void:
+	gold = maxi(0, gold + amount)
+	gold_changed.emit(gold)
+	save_settings()
 
 
 func set_master_volume_linear(v: float) -> void:
@@ -63,3 +80,7 @@ func apply_display() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func get_player_inventory() -> Inventory:
+	return player_inventory

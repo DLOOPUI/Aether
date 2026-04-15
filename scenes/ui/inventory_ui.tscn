@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3 uid="uid://inv_ui_123"]
+
+[ext_resource type="Script" path="res://scripts/ui/inventory_ui.gd" id="1_script"]
+
+[node name="InventoryUI" type="CanvasLayer" script=ExtResource("1_script")]
+visible = false
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 361.0
+offset_top = 134.0
+offset_right = 961.0
+offset_bottom = 514.0
+layout_mode = 1
+
+[node name="Header" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+offset_right = 600.0
+offset_bottom = 40.0
+
+[node name="CloseButton" type="Button" parent="Panel/Header"]
+layout_mode = 2
+text = "X"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+offset_top = 40.0
+offset_right = 600.0
+offset_bottom = 380.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="GridContainer" type="GridContainer" parent="Panel/Margin"]
+layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10

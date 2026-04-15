@@ -14,10 +14,39 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_ESCAPE:
-		if get_tree().paused:
+	if get_tree().paused:
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_J:
+		QuestManager.toggle_quest_log()
+		if QuestManager.is_quest_log_open():
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		else:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_viewport().set_input_as_handled()
+		return
+	if OS.is_debug_build() and event is InputEventKey and event.pressed and not event.echo:
+		match event.physical_keycode:
+			KEY_F1:
+				QuestManager.update_quest_progress("tutorial_plaza")
+				get_viewport().set_input_as_handled()
+				return
+			KEY_F2:
+				QuestManager.update_quest_progress("collect_apples")
+				get_viewport().set_input_as_handled()
+				return
+			KEY_F3:
+				QuestManager.update_quest_progress("slime_hunt")
+				get_viewport().set_input_as_handled()
+				return
+	if event.is_action_pressed(&"ui_cancel"):
+		if QuestManager.is_quest_log_open():
+			QuestManager.toggle_quest_log()
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			get_viewport().set_input_as_handled()
 			return
 		_open_pause()
+		get_viewport().set_input_as_handled()
+		return
 
 
 func _open_pause() -> void:
