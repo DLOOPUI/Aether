@@ -155,105 +155,167 @@ text = "Prototipo: WASD, espacio, ratón · Esc menú"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="CharacterPage" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
+[node name="CharacterPage" type="HBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 12
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 
-[node name="CharTitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+[node name="LeftColumn" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="CharTitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.92, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "Personalización"
-horizontal_alignment = 1
+text = "Crear personaje"
+horizontal_alignment = 0
 
-[node name="CharSubtitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+[node name="CharSubtitle" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
-theme_override_font_sizes/font_size = 12
-text = "Género, raza, ropa — se conectará al modelo 3D más adelante."
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 11
+text = "Identidad (raza, ropa) y cuerpo (proporciones). La calidad final del modelo vendrá de mallas anime cuando las importéis."
 autowrap_mode = 2
 
-[node name="Form" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+[node name="TabRoot" type="TabContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/side_margin = 8
+
+[node name="Identidad" type="ScrollContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot"]
+layout_mode = 2
+
+[node name="MarginId" type="MarginContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 8
+
+[node name="Form" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="LG" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="LG" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Género"
 
-[node name="OptGender" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="OptGender" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 
-[node name="LR" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="LR" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Raza"
 
-[node name="OptRace" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="OptRace" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 
-[node name="LT" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="LT" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Parte superior"
 
-[node name="OptTop" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="OptTop" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 
-[node name="LP" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="LP" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Pantalón / falda"
 
-[node name="OptPants" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="OptPants" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 
-[node name="LS" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="LS" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Calzado"
 
-[node name="OptShoes" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="OptShoes" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 
-[node name="LH" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="LH" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "Cabello"
+text = "Cabello (estilo)"
 
-[node name="OptHair" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/Form"]
+[node name="OptHair" type="OptionButton" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 
-[node name="FooterRow" type="HBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+[node name="Cuerpo" type="ScrollContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot"]
+layout_mode = 2
+
+[node name="MarginBody" type="MarginContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Cuerpo"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 8
+
+[node name="BodySliders" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Cuerpo/MarginBody"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FooterRow" type="HBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="BtnBack" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/FooterRow"]
+[node name="BtnBack" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 text = "← Menú"
 
-[node name="BtnApply" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/FooterRow"]
+[node name="BtnApply" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 text = "Guardar"
+
+[node name="PreviewColumn" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="PreviewHint" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.68, 0.82, 1)
+theme_override_font_sizes/font_size = 11
+text = "Vista previa 3D · click derecho arrastra la cámara"
+horizontal_alignment = 1
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn"]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn/SubViewportContainer"]
+handle_input_locally = true
+size = Vector2i(800, 800)
+render_target_update_mode = 4
+transparent_bg = false
 
 [node name="Spacer" type="Control" parent="SafeArea/MainLayout"]
 layout_mode = 2
