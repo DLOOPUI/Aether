@@ -42,5 +42,7 @@ func hide_inventory() -> void:
 	# get_tree().paused = false
 
 func _input(event: InputEvent) -> void:
+	if event == null:
+		return
 	if event.is_action_pressed("ui_cancel") and visible:
 		hide_inventory()

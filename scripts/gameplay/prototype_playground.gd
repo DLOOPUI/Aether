@@ -16,6 +16,8 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event == null:
+		return
 	if DialogueManager.is_dialogue_active():
 		return
 	if get_tree().paused:

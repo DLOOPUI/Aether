@@ -34,6 +34,8 @@ func _on_gamepads_changed(count: int) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if event == null:
+		return
 	if not visible:
 		return
 	if event.is_action_pressed(&"ui_cancel"):

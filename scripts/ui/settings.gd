@@ -52,6 +52,8 @@ func _on_gamepads_changed(count: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event == null:
+		return
 	if event.is_action_pressed(&"ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_go_back()

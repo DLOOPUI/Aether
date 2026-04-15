@@ -57,6 +57,8 @@ func _refresh() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if event == null:
+		return
 	if not visible or not DialogueManager.is_dialogue_active():
 		return
 	if event.is_action_pressed(&"ui_cancel"):
