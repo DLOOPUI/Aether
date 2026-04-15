@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+UiGamepadSupport="*res://scripts/core/ui_gamepad_support.gd"
 GameSettings="*res://scripts/core/game_settings.gd"
 
 [display]

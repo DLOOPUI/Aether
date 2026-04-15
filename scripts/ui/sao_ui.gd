@@ -37,6 +37,19 @@ static func style_slider_track(bg: Color, border: Color) -> StyleBoxFlat:
 
 
 ## Zona rellena a la izquierda / abajo del grabber.
+static func style_focus_ring() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.1, 0.36, 0.58, 0.42)
+	sb.border_color = Color(0.55, 0.98, 1.0, 1.0)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 12
+	sb.content_margin_top = 8
+	sb.content_margin_right = 12
+	sb.content_margin_bottom = 8
+	return sb
+
+
 static func style_slider_fill(bg: Color, border: Color) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
@@ -54,11 +67,12 @@ static func apply_to_buttons(root: Node) -> void:
 	var n := style_flat(Color(0.08, 0.14, 0.22, 0.42), Color(0.35, 0.72, 0.92, 0.35))
 	var h := style_flat(Color(0.12, 0.38, 0.58, 0.62), Color(0.45, 0.92, 1.0, 0.95))
 	var p := style_flat(Color(0.06, 0.22, 0.38, 0.78), Color(0.25, 0.55, 0.75, 1.0))
+	var f := style_focus_ring()
 	var track := style_slider_track(Color(0.05, 0.11, 0.2, 0.92), Color(0.28, 0.62, 0.88, 0.38))
 	var fill := style_slider_fill(Color(0.08, 0.32, 0.52, 0.68), Color(0.35, 0.78, 0.98, 0.5))
 	var fill_hi := style_slider_fill(Color(0.12, 0.45, 0.68, 0.78), Color(0.45, 0.92, 1.0, 0.65))
 	_ensure_slider_icons()
-	_style_walk(root, n, h, p, track, fill, fill_hi)
+	_style_walk(root, n, h, p, f, track, fill, fill_hi)
 
 
 static func _ensure_slider_icons() -> void:
@@ -100,6 +114,7 @@ static func _style_walk(
 	n: StyleBoxFlat,
 	h: StyleBoxFlat,
 	p: StyleBoxFlat,
+	f: StyleBoxFlat,
 	track: StyleBoxFlat,
 	fill: StyleBoxFlat,
 	fill_hi: StyleBoxFlat,
@@ -109,25 +124,29 @@ static func _style_walk(
 		ob.add_theme_stylebox_override(&"normal", n.duplicate() as StyleBoxFlat)
 		ob.add_theme_stylebox_override(&"hover", h.duplicate() as StyleBoxFlat)
 		ob.add_theme_stylebox_override(&"pressed", p.duplicate() as StyleBoxFlat)
+		ob.add_theme_stylebox_override(&"focus", f.duplicate() as StyleBoxFlat)
 	elif node is Button:
 		var b := node as Button
 		b.add_theme_stylebox_override(&"normal", n.duplicate() as StyleBoxFlat)
 		b.add_theme_stylebox_override(&"hover", h.duplicate() as StyleBoxFlat)
 		b.add_theme_stylebox_override(&"pressed", p.duplicate() as StyleBoxFlat)
-		b.add_theme_stylebox_override(&"focus", h.duplicate() as StyleBoxFlat)
+		b.add_theme_stylebox_override(&"focus", f.duplicate() as StyleBoxFlat)
 	elif node is CheckBox:
 		var c := node as CheckBox
 		c.add_theme_stylebox_override(&"normal", n.duplicate() as StyleBoxFlat)
 		c.add_theme_stylebox_override(&"hover", h.duplicate() as StyleBoxFlat)
 		c.add_theme_stylebox_override(&"pressed", p.duplicate() as StyleBoxFlat)
+		c.add_theme_stylebox_override(&"focus", f.duplicate() as StyleBoxFlat)
 	elif node is Slider:
 		var s := node as Slider
+		s.focus_mode = Control.FOCUS_ALL
 		s.add_theme_stylebox_override(&"slider", track.duplicate() as StyleBoxFlat)
 		s.add_theme_stylebox_override(&"grabber_area", fill.duplicate() as StyleBoxFlat)
 		s.add_theme_stylebox_override(&"grabber_area_highlight", fill_hi.duplicate() as StyleBoxFlat)
+		s.add_theme_stylebox_override(&"focus", f.duplicate() as StyleBoxFlat)
 		s.add_theme_icon_override(&"grabber", _tex_grabber)
 		s.add_theme_icon_override(&"grabber_highlight", _tex_grabber_hi)
 		s.add_theme_icon_override(&"grabber_disabled", _tex_grabber_dis)
 		s.add_theme_icon_override(&"tick", _tex_tick)
 	for c in node.get_children():
-		_style_walk(c, n, h, p, track, fill, fill_hi)
+		_style_walk(c, n, h, p, f, track, fill, fill_hi)

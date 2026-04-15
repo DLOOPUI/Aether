@@ -29,6 +29,9 @@ var _body_sliders: Dictionary = {}
 @onready var _btn_back: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow/BtnBack
 @onready var _btn_apply: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow/BtnApply
 @onready var _body_sliders_root: VBoxContainer = get_node(_BODY_SLIDERS_PATH)
+@onready var _tab_root: TabContainer = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot
+
+var _gamepad_hint: Label
 
 
 func _ready() -> void:
@@ -42,8 +45,47 @@ func _ready() -> void:
 	_apply_draft_to_options()
 	SaoUi.apply_to_buttons(_main_page)
 	SaoUi.apply_to_buttons(_left_column)
+	_setup_gamepad_hint()
+	UiGamepadSupport.gamepads_changed.connect(_on_gamepads_changed)
+	_on_gamepads_changed(UiGamepadSupport.connected_joypads)
 	_show_main_page()
 	_btn_play.grab_focus()
+
+
+func _setup_gamepad_hint() -> void:
+	_gamepad_hint = Label.new()
+	_gamepad_hint.text = "Mando: ↑↓←→ · A · B · LB/RB pestañas"
+	_gamepad_hint.add_theme_color_override(&"font_color", Color(0.55, 0.82, 0.98, 0.92))
+	_gamepad_hint.add_theme_font_size_override(&"font_size", 11)
+	_gamepad_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_gamepad_hint.visible = false
+	_gamepad_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_gamepad_hint.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_gamepad_hint.offset_left = -420.0
+	_gamepad_hint.offset_top = 8.0
+	_gamepad_hint.offset_right = -16.0
+	_gamepad_hint.offset_bottom = 48.0
+	$SafeArea.add_child(_gamepad_hint)
+
+
+func _on_gamepads_changed(count: int) -> void:
+	if _gamepad_hint:
+		_gamepad_hint.visible = count > 0
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _char_page.visible:
+		return
+	if event.is_action_pressed(&"menu_tab_prev"):
+		var n: int = _tab_root.get_tab_count()
+		if n > 1:
+			_tab_root.current_tab = (_tab_root.current_tab - 1 + n) % n
+			get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"menu_tab_next"):
+		var n2: int = _tab_root.get_tab_count()
+		if n2 > 1:
+			_tab_root.current_tab = (_tab_root.current_tab + 1) % n2
+			get_viewport().set_input_as_handled()
 
 
 func _build_body_sliders() -> void:
