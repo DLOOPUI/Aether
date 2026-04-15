@@ -41,16 +41,69 @@ albedo_texture = ExtResource("3_olumy")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wgl7f"]
 
+[sub_resource type="Animation" id="Animation_olumy"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SpringArm3D/Camera3D:fov")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [75.0]
+}
+
+[sub_resource type="Animation" id="Animation_xxmvi"]
+resource_name = "run"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SpringArm3D/Camera3D:fov")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [75.0, 55.0]
+}
+
+[sub_resource type="Animation" id="Animation_xwg0q"]
+resource_name = "run_reverse"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SpringArm3D/Camera3D:fov")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [55.0, 75.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_xwg0q"]
+_data = {
+&"RESET": SubResource("Animation_olumy"),
+&"run": SubResource("Animation_xxmvi"),
+&"run_reverse": SubResource("Animation_xwg0q")
+}
+
 [node name="Player" type="CharacterBody3D" unique_id=962220303]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 script = ExtResource("1_wgl7f")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=904745982]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.963153, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.036847, 0)
 shape = SubResource("CapsuleShape3D_body")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1075451378]
-transform = Transform3D(-0.745, 0, 1.12491875e-07, 0, 0.745, 0, -1.12491875e-07, 0, -0.745, 0, -2, 0)
+transform = Transform3D(-0.745, 0, 1.12491875e-07, 0, 0.745, 0, -1.12491875e-07, 0, -0.745, 0, 0, 0)
 mesh = ExtResource("2_hrnqq")
 surface_material_override/0 = SubResource("StandardMaterial3D_hkk1c")
 surface_material_override/1 = SubResource("StandardMaterial3D_1fndr")
@@ -63,10 +116,13 @@ surface_material_override/7 = SubResource("StandardMaterial3D_i71qe")
 surface_material_override/8 = SubResource("StandardMaterial3D_pw31f")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=740004709]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8499999, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.85, 0)
 shape = SubResource("BoxShape3D_wgl7f")
 spring_length = 4.5
 
 [node name="Camera3D" type="Camera3D" parent="SpringArm3D" unique_id=1575518551]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0023131, 4.353677)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.43639278, 5.45729)
 current = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=840814449]
+libraries/ = SubResource("AnimationLibrary_xwg0q")

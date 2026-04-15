@@ -1,12 +1,13 @@
 extends CharacterBody3D
 
 @export var move_speed: float = 6.0
-@export var jump_velocity: float = 5.5
+@export var jump_velocity: float = 20.0
 @export var mouse_sensitivity: float = 0.0022
 @export var min_pitch_rad: float = deg_to_rad(-50.0)
 @export var max_pitch_rad: float = deg_to_rad(35.0)
 
 @onready var _spring_arm: SpringArm3D = $SpringArm3D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 var _pitch: float = deg_to_rad(-12.0)
 
@@ -28,11 +29,18 @@ func _input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 	if not is_on_floor():
-		velocity.y -= gravity * delta
+		velocity.y += -gravity * 5.5 * delta
 
 	if Input.is_physical_key_pressed(KEY_SPACE) and is_on_floor():
 		velocity.y = jump_velocity
-
+	
+	if Input.is_action_just_pressed("run") and is_on_floor():
+		move_speed = move_speed * 3
+		animation_player.play("run")
+	elif Input.is_action_just_released("run"):
+		move_speed = 6.0
+		animation_player.play("run_reverse")
+	
 	var cam_basis: Basis = _spring_arm.global_transform.basis
 	var forward: Vector3 = -cam_basis.z
 	forward.y = 0.0
