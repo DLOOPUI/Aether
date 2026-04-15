@@ -155,16 +155,15 @@ text = "Prototipo: WASD, espacio, ratón · Esc menú"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="CharacterPage" type="HBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
+[node name="CharacterPage" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn"]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="LeftColumn" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
-custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
@@ -179,7 +178,7 @@ horizontal_alignment = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
 theme_override_font_sizes/font_size = 11
-text = "Identidad (raza, ropa) y cuerpo (proporciones). La calidad final del modelo vendrá de mallas anime cuando las importéis."
+text = "Pestañas: identidad y proporciones. Los valores se guardan; la vista 3D la añadiréis cuando importéis un modelo."
 autowrap_mode = 2
 
 [node name="TabRoot" type="TabContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn"]
@@ -290,32 +289,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 text = "Guardar"
-
-[node name="PreviewColumn" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 6
-
-[node name="PreviewHint" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.68, 0.82, 1)
-theme_override_font_sizes/font_size = 11
-text = "Vista previa 3D · click derecho arrastra la cámara"
-horizontal_alignment = 1
-
-[node name="SubViewportContainer" type="SubViewportContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn"]
-custom_minimum_size = Vector2(400, 400)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn/SubViewportContainer"]
-handle_input_locally = true
-size = Vector2i(800, 800)
-render_target_update_mode = 4
-transparent_bg = false
 
 [node name="Spacer" type="Control" parent="SafeArea/MainLayout"]
 layout_mode = 2

@@ -1,5 +1,5 @@
 extends Resource
-## Datos de personaje: ropa (menú) + proporciones y tonos (vista previa ARK / procedural).
+## Datos de personaje: ropa (menú) + proporciones y tonos (sliders; para usar con modelo 3D cuando exista).
 class_name CharacterDraft
 
 @export var gender_id: int = 0

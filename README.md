@@ -53,7 +53,7 @@ Por defecto se usa un **gradiente procedural** (atardecer). Opcional: añade `as
 | [`docs/diagrams/`](docs/diagrams/) | Diagramas (estados, loop) |
 | [`docs/packaging.md`](docs/packaging.md) | Export e instaladores |
 | [`docs/roadmap.md`](docs/roadmap.md) | Líneas de trabajo y mejoras previstas |
-| [`docs/character_preview.md`](docs/character_preview.md) | Vista previa 3D procedural (escena aparte) |
+| [`docs/character_preview.md`](docs/character_preview.md) | Personalización en menú (pestañas, sin vista 3D hasta importar modelo) |
 
 ## Licencia
 

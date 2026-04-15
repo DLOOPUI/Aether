@@ -1,9 +1,8 @@
-# Vista previa del personaje (menú)
+# Personalización de personaje (menú)
 
-La vista previa **3D está integrada en el menú principal**: al pulsar **Personalizar personaje** se muestra un panel con:
+En **Personalizar personaje** hay dos pestañas:
 
-- Pestaña **Identidad**: género, raza, ropa (listas).
-- Pestaña **Cuerpo**: sliders de proporciones y tonos (estilo ARK).
-- **SubViewport** a la derecha con el modelo procedural y **click derecho** para orbitar la cámara.
+- **Identidad**: listas (género, raza, ropa, etc.).
+- **Cuerpo**: sliders de proporciones y tonos; los valores se guardan en `CharacterDraft` (`user://character_draft.tres`).
 
-El modelo actual son **primitivas estilo chibi** (marcador de posición). Para acercarse a un acabado tipo **figura 3D anime** (como referencias de juegos con personajes “toy/chibi” de alta calidad) hace falta **importar un GLTF/GLB** hecho en Blender u otro DCC, con materiales y rig; el código ya concentra la lógica en `ProceduralHumanoid` y `CharacterDraft` para poder sustituir mallas más adelante.
+No hay vista 3D integrada en el menú por ahora: cuando tengáis un **modelo importado** (GLTF/GLB), podréis mostrarlo en un `SubViewport` o en la escena de juego usando los mismos datos guardados.

@@ -5,23 +5,15 @@ const SETTINGS_SCENE := &"res://scenes/ui/settings.tscn"
 
 const _FORM_PREFIX := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form/"
 const _BODY_SLIDERS_PATH := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Cuerpo/MarginBody/BodySliders"
-const _VP_PATH := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn/SubViewportContainer"
 
 var _draft: CharacterDraft = CharacterDraft.new()
-var _preview_humanoid: ProceduralHumanoid
-var _preview_cam_pivot: Node3D
 var _body_sliders: Dictionary = {}
-
-var _orbit_yaw: float = 0.0
-var _orbit_pitch: float = 10.0
 
 @onready var _main_page: Control = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage
 @onready var _char_page: Control = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage
 @onready var _left_panel: PanelContainer = $SafeArea/MainLayout/LeftPanel
 @onready var _spacer: Control = $SafeArea/MainLayout/Spacer
 @onready var _left_column: VBoxContainer = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn
-@onready var _subvp_container: SubViewportContainer = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn/SubViewportContainer
-@onready var _subviewport: SubViewport = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/PreviewColumn/SubViewportContainer/SubViewport
 
 @onready var _btn_play: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnPlay
 @onready var _btn_customize: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnCustomize
@@ -50,79 +42,8 @@ func _ready() -> void:
 	_apply_draft_to_options()
 	SaoUi.apply_to_buttons(_main_page)
 	SaoUi.apply_to_buttons(_left_column)
-	call_deferred(&"_setup_character_preview_world")
 	_show_main_page()
 	_btn_play.grab_focus()
-
-
-func _setup_character_preview_world() -> void:
-	var root := Node3D.new()
-	root.name = &"PreviewWorld"
-	_subviewport.add_child(root)
-
-	var we := WorldEnvironment.new()
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.1, 0.12, 0.2)
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.55, 0.62, 0.85)
-	env.ambient_light_energy = 0.45
-	env.tonemap_mode = Environment.TONEMAPPER_ACES
-	env.tonemap_white = 1.1
-	env.glow_enabled = false
-	we.environment = env
-	root.add_child(we)
-
-	var pivot := Node3D.new()
-	pivot.name = &"CameraPivot"
-	pivot.position = Vector3(0, 0.82, 0)
-	root.add_child(pivot)
-	_preview_cam_pivot = pivot
-
-	var cam := Camera3D.new()
-	cam.position = Vector3(0, 0.28, 1.95)
-	cam.rotation_degrees = Vector3(-6, 0, 0)
-	cam.fov = 40.0
-	cam.current = true
-	pivot.add_child(cam)
-
-	var key := DirectionalLight3D.new()
-	key.rotation_degrees = Vector3(-48, 42, 0)
-	key.light_color = Color(1.0, 0.97, 0.92)
-	key.light_energy = 1.15
-	key.shadow_enabled = true
-	root.add_child(key)
-
-	var fill := DirectionalLight3D.new()
-	fill.rotation_degrees = Vector3(-22, -130, 0)
-	fill.light_color = Color(0.75, 0.82, 1.0)
-	fill.light_energy = 0.4
-	root.add_child(fill)
-
-	var rim := DirectionalLight3D.new()
-	rim.rotation_degrees = Vector3(-15, 200, 0)
-	rim.light_color = Color(0.9, 0.95, 1.0)
-	rim.light_energy = 0.22
-	root.add_child(rim)
-
-	var hum := ProceduralHumanoid.new()
-	hum.name = &"ProceduralHumanoid"
-	root.add_child(hum)
-	_preview_humanoid = hum
-	_refresh_character_preview()
-
-	_subvp_container.gui_input.connect(_on_preview_gui_input)
-
-
-func _on_preview_gui_input(event: InputEvent) -> void:
-	if not _char_page.visible:
-		return
-	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		_orbit_yaw -= event.relative.x * 0.0045
-		_orbit_pitch -= event.relative.y * 0.0045
-		_orbit_pitch = clampf(_orbit_pitch, -8.0, 42.0)
-		if _preview_cam_pivot:
-			_preview_cam_pivot.rotation_degrees = Vector3(_orbit_pitch, _orbit_yaw, 0.0)
 
 
 func _build_body_sliders() -> void:
@@ -177,12 +98,6 @@ func _on_body_slider(prop: StringName, v: float) -> void:
 			_draft.skin_tone_01 = v
 		"hair_tone_01":
 			_draft.hair_tone_01 = v
-	_refresh_character_preview()
-
-
-func _refresh_character_preview() -> void:
-	if _preview_humanoid:
-		_preview_humanoid.apply_draft(_draft)
 
 
 func _apply_draft_to_options() -> void:
@@ -239,7 +154,6 @@ func _on_identity_changed(_i: int = 0) -> void:
 	_draft.pants_id = _opt_pants.selected
 	_draft.shoes_id = _opt_shoes.selected
 	_draft.hair_id = _opt_hair.selected
-	_refresh_character_preview()
 
 
 func _fill_character_options() -> void:
@@ -273,7 +187,6 @@ func _on_customize_pressed() -> void:
 	_spacer.visible = false
 	_left_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_left_panel.custom_minimum_size = Vector2(520, 0)
-	_refresh_character_preview()
 	_btn_back.grab_focus()
 
 
@@ -296,6 +209,13 @@ func _sync_draft_from_ui() -> void:
 	_draft.pants_id = _opt_pants.selected
 	_draft.shoes_id = _opt_shoes.selected
 	_draft.hair_id = _opt_hair.selected
+	_draft.height_01 = float(_body_sliders[&"height_01"].value)
+	_draft.build_01 = float(_body_sliders[&"build_01"].value)
+	_draft.head_size_01 = float(_body_sliders[&"head_size_01"].value)
+	_draft.arm_length_01 = float(_body_sliders[&"arm_length_01"].value)
+	_draft.leg_length_01 = float(_body_sliders[&"leg_length_01"].value)
+	_draft.skin_tone_01 = float(_body_sliders[&"skin_tone_01"].value)
+	_draft.hair_tone_01 = float(_body_sliders[&"hair_tone_01"].value)
 
 
 func _on_apply_character_pressed() -> void:
