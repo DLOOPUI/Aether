@@ -2,7 +2,6 @@
 
 [ext_resource type="PackedScene" uid="uid://261h5l6q5bir" path="res://scenes/gameplay/player.tscn" id="2_678b4"]
 [ext_resource type="Script" uid="uid://cr2v8qpmdanv2" path="res://scripts/gameplay/prototype_playground.gd" id="2_playground"]
-[ext_resource type="MeshLibrary" uid="uid://bjccxxm3cxl2x" path="res://assets/mesh library/forest.tres" id="3_ouj1q"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
 albedo_color = Color(0.22, 0.24, 0.3, 1)
@@ -33,10 +32,4 @@ mesh = SubResource("BoxMesh_ground")
 shape = SubResource("BoxShape3D_ground")
 
 [node name="Player" parent="." unique_id=962220303 instance=ExtResource("2_678b4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.058678, 0)
-
-[node name="GridMap" type="GridMap" parent="." unique_id=2005953170]
-mesh_library = ExtResource("3_ouj1q")
-data = {
-"cells": PackedInt32Array(65524, 65527, 87, 65525, 65535, 87, 65527, 5, 87, 65532, 6, 87, 2, 7, 87, 2, 8, 87, 0, 10, 87, 65535, 10, 87, 65534, 11, 87, 65533, 11, 87, 65528, 9, 87, 7, 65530, 87, 8, 65530, 87, 7, 65529, 87, 6, 65529, 87, 6, 65528, 87, 5, 65528, 87, 5, 65527, 87, 4, 65527, 87, 3, 65527, 87, 2, 65526, 87, 1, 65526, 87, 0, 65526, 87, 65535, 65527, 87, 65534, 65527, 87, 65533, 65527, 87, 65532, 65527, 87, 65530, 65531, 87, 65529, 65531, 87, 65529, 65532, 87, 65528, 65532, 87, 2, 65531, 87, 1, 65531, 87, 1, 65532, 87, 2, 65532, 87, 2, 65533, 87, 3, 65533, 87, 3, 65534, 87, 4, 65534, 87, 5, 65534, 87, 5, 65535, 87, 65532, 0, 87, 6, 4, 87, 6, 5, 87, 7, 6, 87, 6, 6, 87, 7, 7, 87, 7, 8, 87, 7, 9, 87, 8, 9, 87, 8, 10, 87, 65534, 3, 78, 65533, 3, 78, 65532, 3, 78, 65531, 2, 78, 65531, 1, 78, 65530, 1, 78, 65530, 0, 78, 65534, 65532, 78, 65534, 65531, 78, 65534, 65529, 78, 3, 2, 78, 0, 8, 78, 65534, 7, 78, 65533, 7, 78, 65530, 5, 78)
-}
+transform = Transform3D(0.53, 0, 0, 0, 0.53, 0, 0, 0, 0.53, 0, 10.058678, 0)
