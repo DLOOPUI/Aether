@@ -25,9 +25,7 @@ func _ready() -> void:
 		add_child(_health_system)
 	
 	_health_system.health_depleted.connect(_on_player_death)
-	
-	# Buscar sistema de experiencia
-	_find_experience_system()
+	call_deferred("_find_experience_system")
 
 
 func _process(delta: float) -> void:
@@ -144,18 +142,47 @@ func get_attack_damage() -> float:
 
 
 func _find_experience_system() -> void:
-	# Buscar sistema de experiencia en el árbol
-	var parent = get_parent()
+	var parent := get_parent()
 	while parent:
 		if parent.has_node("ExperienceSystem"):
 			_experience_system = parent.get_node("ExperienceSystem") as ExperienceSystem
-			print("Sistema de experiencia encontrado")
 			break
 		parent = parent.get_parent()
-	
-	# Si no se encuentra, buscar en autoloads
 	if not _experience_system:
 		_experience_system = get_node_or_null("/root/ExperienceSystem")
+	if _experience_system:
+		if not _experience_system.stat_changed.is_connected(_on_experience_stat_changed):
+			_experience_system.stat_changed.connect(_on_experience_stat_changed)
+		_sync_max_health_from_experience()
+
+
+func _on_experience_stat_changed(stat: StringName, _old_value: float, new_value: float) -> void:
+	if stat != &"max_health":
+		return
+	if not _health_system:
+		return
+	var ratio := (
+		_health_system.current_health / _health_system.max_health
+		if _health_system.max_health > 0.0
+		else 1.0
+	)
+	_health_system.max_health = new_value
+	_health_system.current_health = clampf(new_value * ratio, 0.0, new_value)
+
+
+func _sync_max_health_from_experience() -> void:
+	if not _experience_system or not _health_system:
+		return
+	var target := _experience_system.max_health
+	if is_equal_approx(target, _health_system.max_health):
+		return
+	var ratio := (
+		_health_system.current_health / _health_system.max_health
+		if _health_system.max_health > 0.0
+		else 1.0
+	)
+	_health_system.max_health = target
+	_health_system.current_health = clampf(target * ratio, 0.0, target)
 
 
 func _on_enemy_killed(enemy: Node) -> void:

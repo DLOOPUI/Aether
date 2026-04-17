@@ -6,6 +6,7 @@ extends Control
 @export var low_health_threshold: float = 0.3
 
 var _health_system: HealthSystem = null
+var _low_health_tween: Tween = null
 @onready var _health_fill: Panel = $Background/HealthFill
 @onready var _health_text: Label = $Background/HealthText
 
@@ -46,11 +47,11 @@ func _connect_to_health_system(system: HealthSystem) -> void:
 
 func _on_health_changed(current: float, max_health: float) -> void:
 	_update_health_display(current, max_health)
-	
-	# Feedback visual cuando la salud es baja
-	var health_percent = current / max_health
+	var health_percent := current / max_health if max_health > 0.0 else 0.0
 	if health_percent <= low_health_threshold:
 		_start_low_health_pulse()
+	else:
+		_stop_low_health_pulse()
 
 
 func _update_health_display(current: float, max_health: float) -> void:
@@ -78,10 +79,20 @@ func _update_health_display(current: float, max_health: float) -> void:
 
 
 func _start_low_health_pulse() -> void:
-	var tween = create_tween()
-	tween.set_loops()
-	tween.tween_property(_health_fill, "modulate", Color(1, 1, 1, 0.7), 0.5)
-	tween.tween_property(_health_fill, "modulate", Color(1, 1, 1, 1), 0.5)
+	if _low_health_tween and is_instance_valid(_low_health_tween):
+		return
+	_low_health_tween = create_tween()
+	_low_health_tween.set_loops()
+	_low_health_tween.tween_property(_health_fill, "modulate", Color(1, 1, 1, 0.7), 0.5)
+	_low_health_tween.tween_property(_health_fill, "modulate", Color(1, 1, 1, 1), 0.5)
+
+
+func _stop_low_health_pulse() -> void:
+	if _low_health_tween and is_instance_valid(_low_health_tween):
+		_low_health_tween.kill()
+	_low_health_tween = null
+	if is_instance_valid(_health_fill):
+		_health_fill.modulate = Color(1, 1, 1, 1)
 
 
 func set_health_values(current: float, max_health: float) -> void:

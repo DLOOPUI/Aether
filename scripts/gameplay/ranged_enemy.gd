@@ -1,6 +1,8 @@
 extends CharacterBody3D
 ## Enemigo que ataca a distancia con proyectiles.
 
+const ENEMY_PROJECTILE := preload("res://scripts/gameplay/enemy_projectile_area.gd")
+
 @export var max_health: float = 40.0
 @export var move_speed: float = 2.5
 @export var attack_damage: float = 15.0
@@ -25,39 +27,44 @@ var _health_system: HealthSystem
 var _is_retreating: bool = false
 
 @onready var _player: Node3D = get_tree().get_first_node_in_group("player")
-@onready var _projectile_spawn: Node3D = $ProjectileSpawn
+var _projectile_spawn: Node3D
 
 
 func _ready() -> void:
-	# Crear sistema de salud
-	_health_system = HealthSystem.new()
-	_health_system.max_health = max_health
-	_health_system.current_health = max_health
+	if has_node("HealthSystem"):
+		_health_system = $HealthSystem as HealthSystem
+		_health_system.max_health = max_health
+		_health_system.current_health = max_health
+	else:
+		_health_system = HealthSystem.new()
+		_health_system.max_health = max_health
+		_health_system.current_health = max_health
+		add_child(_health_system)
 	_health_system.health_depleted.connect(_on_death)
 	_health_system.health_changed.connect(_on_health_changed)
-	add_child(_health_system)
-	
-	# Añadir a grupo de enemigos
+
 	add_to_group("enemies")
 	add_to_group("ranged_enemies")
-	
-	# Crear mesh placeholder (cubo azul)
-	var mesh = MeshInstance3D.new()
-	mesh.mesh = BoxMesh.new()
-	var material = StandardMaterial3D.new()
-	material.albedo_color = Color(0.2, 0.2, 0.8)  # Azul para enemigo a distancia
-	mesh.set_surface_override_material(0, material)
-	mesh.name = "MeshInstance3D"
-	add_child(mesh)
-	
-	# Crear nodo para spawn de proyectiles si no existe
-	if not has_node("ProjectileSpawn"):
+	collision_layer = 1
+	collision_mask = 3
+
+	if not has_node("MeshInstance3D"):
+		var mesh := MeshInstance3D.new()
+		mesh.mesh = BoxMesh.new()
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Color(0.2, 0.2, 0.8)
+		mesh.set_surface_override_material(0, material)
+		mesh.name = "MeshInstance3D"
+		add_child(mesh)
+
+	if has_node("ProjectileSpawn"):
+		_projectile_spawn = $ProjectileSpawn
+	else:
 		_projectile_spawn = Node3D.new()
 		_projectile_spawn.name = "ProjectileSpawn"
 		_projectile_spawn.position = Vector3(0, 1.5, 0)
 		add_child(_projectile_spawn)
-	
-	# Añadir barra de salud 3D
+
 	_add_health_bar()
 
 
@@ -149,88 +156,15 @@ func _attack_target() -> void:
 
 
 func _shoot_projectile() -> void:
-	# Crear proyectil
-	var projectile = _create_projectile()
-	
-	# Calcular dirección al jugador (con predicción básica)
-	var target_pos = _target.global_position
-	var to_target = target_pos - _projectile_spawn.global_position
-	
-	# Añadir offset vertical para que no dispare al suelo
+	var target_pos := _target.global_position
+	var to_target := target_pos - _projectile_spawn.global_position
 	to_target.y += 0.5
-	
-	# Normalizar y aplicar velocidad
-	var direction = to_target.normalized()
-	projectile.linear_velocity = direction * projectile_speed
-	
-	# Rotar proyectil hacia la dirección
-	projectile.look_at(_projectile_spawn.global_position + direction)
-	
-	# Añadir al mundo
+	var direction := to_target.normalized()
+	var projectile := ENEMY_PROJECTILE.new()
+	projectile.setup(direction * projectile_speed, attack_damage, self)
 	get_parent().add_child(projectile)
-	
-	# Efecto visual/auditivo
-	_play_shot_effect()
-
-
-func _create_projectile() -> RigidBody3D:
-	var projectile = RigidBody3D.new()
-	projectile.name = "EnemyProjectile"
-	
-	# Mesh y colisión
-	var mesh = MeshInstance3D.new()
-	mesh.mesh = SphereMesh.new()
-	(mesh.mesh as SphereMesh).radius = 0.2
-	var material = StandardMaterial3D.new()
-	material.albedo_color = Color(0.8, 0.8, 0.2)  # Amarillo para proyectil
-	mesh.set_surface_override_material(0, material)
-	projectile.add_child(mesh)
-	
-	var collision = CollisionShape3D.new()
-	collision.shape = SphereShape3D.new()
-	(collision.shape as SphereShape3D).radius = 0.3
-	projectile.add_child(collision)
-	
-	# Configurar física
-	projectile.gravity_scale = 0.0
-	projectile.continuous_cd = true
-	projectile.contact_monitor = true
-	projectile.max_contacts_reported = 1
-	
-	# Posicionar
 	projectile.global_position = _projectile_spawn.global_position
-	
-	# Conectar señal de colisión
-	projectile.body_entered.connect(_on_projectile_hit.bind(projectile))
-	
-	# Auto-destrucción después de tiempo
-	var timer = Timer.new()
-	timer.wait_time = 3.0
-	timer.one_shot = true
-	timer.timeout.connect(_on_projectile_timeout.bind(projectile))
-	projectile.add_child(timer)
-	timer.start()
-	
-	return projectile
-
-
-func _on_projectile_hit(body: Node, projectile: RigidBody3D) -> void:
-	# Aplicar daño si golpea al jugador
-	if body.is_in_group("player"):
-		if body.has_method("take_damage"):
-			body.take_damage(attack_damage, self)
-			print("Proyectil golpeó al jugador: ", attack_damage, " daño")
-	
-	# Efecto de impacto
-	_play_impact_effect(projectile.global_position)
-	
-	# Eliminar proyectil
-	projectile.queue_free()
-
-
-func _on_projectile_timeout(projectile: RigidBody3D) -> void:
-	if is_instance_valid(projectile):
-		projectile.queue_free()
+	_play_shot_effect()
 
 
 func _play_shot_effect() -> void:
@@ -244,11 +178,6 @@ func _play_shot_effect() -> void:
 		await get_tree().create_timer(0.1).timeout
 		if is_instance_valid(mesh):
 			mesh.get_surface_override_material(0).albedo_color = original_color
-
-
-func _play_impact_effect(position: Vector3) -> void:
-	# Podría crear partículas aquí
-	pass
 
 
 func take_damage(amount: float, source: Node = null) -> bool:

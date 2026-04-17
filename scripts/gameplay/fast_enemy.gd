@@ -31,38 +31,40 @@ var _pattern_timer: float = 0.0
 
 
 func _ready() -> void:
-	# Crear sistema de salud
-	_health_system = HealthSystem.new()
-	_health_system.max_health = max_health
-	_health_system.current_health = max_health
+	if has_node("HealthSystem"):
+		_health_system = $HealthSystem as HealthSystem
+		_health_system.max_health = max_health
+		_health_system.current_health = max_health
+	else:
+		_health_system = HealthSystem.new()
+		_health_system.max_health = max_health
+		_health_system.current_health = max_health
+		add_child(_health_system)
 	_health_system.health_depleted.connect(_on_death)
 	_health_system.health_changed.connect(_on_health_changed)
-	add_child(_health_system)
-	
-	# Añadir a grupo de enemigos
+
 	add_to_group("enemies")
 	add_to_group("fast_enemies")
-	
-	# Crear mesh placeholder (cubo pequeño y claro)
-	var mesh = MeshInstance3D.new()
-	mesh.mesh = BoxMesh.new()
-	(mesh.mesh as BoxMesh).size = Vector3(0.6, 1.2, 0.6)  # Más pequeño
-	var material = StandardMaterial3D.new()
-	material.albedo_color = Color(0.8, 0.8, 0.2)  # Amarillo para enemigo rápido
-	mesh.set_surface_override_material(0, material)
-	mesh.name = "MeshInstance3D"
-	add_child(mesh)
-	
-	# Ajustar colisión
-	var collision = get_node_or_null("CollisionShape3D")
-	if collision:
-		var shape = BoxShape3D.new()
-		shape.size = Vector3(0.6, 1.2, 0.6)
-		collision.shape = shape
-	
-	# Añadir barra de salud 3D
+	collision_layer = 1
+	collision_mask = 3
+
+	if not has_node("MeshInstance3D"):
+		var mesh := MeshInstance3D.new()
+		mesh.mesh = BoxMesh.new()
+		(mesh.mesh as BoxMesh).size = Vector3(0.6, 1.2, 0.6)
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Color(0.8, 0.8, 0.2)
+		mesh.set_surface_override_material(0, material)
+		mesh.name = "MeshInstance3D"
+		add_child(mesh)
+		var collision := get_node_or_null("CollisionShape3D")
+		if collision:
+			var shape := BoxShape3D.new()
+			shape.size = Vector3(0.6, 1.2, 0.6)
+			collision.shape = shape
+
 	_add_health_bar()
-	
+
 	print("Enemigo rápido creado: ", max_health, " HP, ", move_speed, " velocidad")
 
 

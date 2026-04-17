@@ -25,6 +25,9 @@ func _ready() -> void:
 	
 	_original_y = position.y
 	
+	monitoring = true
+	body_entered.connect(_on_body_entered)
+	
 	# Iniciar animación
 	_start_idle_animation()
 
@@ -150,9 +153,9 @@ func _setup_collision() -> void:
 		shape.size = Vector3(0.8, 0.8, 0.8)
 		_collision.shape = shape
 	
-	# Configurar capas de colisión
+	# Capa 2 = jugador (ver player_with_combat.tscn); capa 1 = mundo/enemigos
 	collision_layer = 0
-	collision_mask = 1  # Solo colisiona con jugador
+	collision_mask = 2
 
 
 func _start_idle_animation() -> void:

@@ -17,6 +17,13 @@ func _ready() -> void:
 	mouse_sensitivity *= GameSettings.mouse_sensitivity_multiplier
 
 
+func take_damage(amount: float, source: Node = null) -> bool:
+	var combat := get_node_or_null("PlayerCombat")
+	if combat and combat.has_method("take_damage"):
+		return combat.take_damage(amount, source)
+	return false
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)

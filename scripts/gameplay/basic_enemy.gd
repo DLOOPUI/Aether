@@ -24,27 +24,31 @@ var _health_system: HealthSystem
 
 
 func _ready() -> void:
-	# Crear sistema de salud
-	_health_system = HealthSystem.new()
-	_health_system.max_health = max_health
-	_health_system.current_health = max_health
+	if has_node("HealthSystem"):
+		_health_system = $HealthSystem as HealthSystem
+		_health_system.max_health = max_health
+		_health_system.current_health = max_health
+	else:
+		_health_system = HealthSystem.new()
+		_health_system.max_health = max_health
+		_health_system.current_health = max_health
+		add_child(_health_system)
 	_health_system.health_depleted.connect(_on_death)
 	_health_system.health_changed.connect(_on_health_changed)
-	add_child(_health_system)
-	
-	# Añadir a grupo de enemigos
+
 	add_to_group("enemies")
-	
-	# Crear mesh placeholder (cubo rojo)
-	var mesh = MeshInstance3D.new()
-	mesh.mesh = BoxMesh.new()
-	var material = StandardMaterial3D.new()
-	material.albedo_color = Color(0.8, 0.2, 0.2)
-	mesh.set_surface_override_material(0, material)
-	mesh.name = "MeshInstance3D"
-	add_child(mesh)
-	
-	# Añadir barra de salud 3D
+	collision_layer = 1
+	collision_mask = 3
+
+	if not has_node("MeshInstance3D"):
+		var mesh := MeshInstance3D.new()
+		mesh.mesh = BoxMesh.new()
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Color(0.8, 0.2, 0.2)
+		mesh.set_surface_override_material(0, material)
+		mesh.name = "MeshInstance3D"
+		add_child(mesh)
+
 	_add_health_bar()
 
 
