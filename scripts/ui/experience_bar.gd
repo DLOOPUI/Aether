@@ -1,6 +1,8 @@
 extends Control
 ## Barra de experiencia y nivel del jugador.
 
+const SFX_LEVEL := preload("res://assets/audio/level_up.wav")
+
 @export var experience_system_path: NodePath = ""
 
 var _experience_system: ExperienceSystem = null
@@ -72,6 +74,7 @@ func _on_experience_gained(amount: int, total: int, to_next: int) -> void:
 
 
 func _on_level_up(new_level: int) -> void:
+	CombatSfx.play(self, SFX_LEVEL, -2.0)
 	_current_level = new_level
 	
 	_update_level_display(new_level)

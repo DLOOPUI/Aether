@@ -1,6 +1,11 @@
 extends Node
 ## Sistema de combate para el jugador: ataques, daño, interacciones.
 
+const SFX_SWING := preload("res://assets/audio/swing.wav")
+const SFX_HIT := preload("res://assets/audio/hit.wav")
+const SFX_HURT := preload("res://assets/audio/hurt.wav")
+const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
+
 signal attack_triggered
 signal enemy_hit(enemy: Node, damage: float)
 signal enemy_killed(enemy: Node, experience_gained: int)
@@ -11,6 +16,7 @@ signal player_took_damage(amount: float)
 @export var attack_range: float = 2.5
 @export var attack_cooldown: float = 0.8
 @export var attack_radius: float = 1.2
+@export var combat_balance: CombatBalance
 
 var _attack_timer: float = 0.0
 var _experience_system: ExperienceSystem = null
@@ -28,6 +34,8 @@ func _ready() -> void:
 	_health_system.health_depleted.connect(_on_player_death)
 	_health_system.damage_taken.connect(_on_health_damage_taken)
 	call_deferred("_find_experience_system")
+	if combat_balance == null:
+		combat_balance = ResourceLoader.load(COMBAT_BALANCE_PATH) as CombatBalance
 
 
 func _process(delta: float) -> void:
@@ -42,6 +50,8 @@ func _process(delta: float) -> void:
 func _perform_attack() -> void:
 	_attack_timer = attack_cooldown
 	attack_triggered.emit()
+	_play_attack_vfx()
+	CombatSfx.play(self, SFX_SWING, -4.0)
 	
 	# Detectar enemigos en el área de ataque
 	var enemies = _detect_enemies_in_range()
@@ -102,12 +112,24 @@ func _detect_enemies_in_range() -> Array:
 	return enemies
 
 
+func _play_attack_vfx() -> void:
+	var mesh := _player.get_node_or_null("MeshInstance3D") as MeshInstance3D
+	if mesh == null:
+		return
+	var s := mesh.scale
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(mesh, "scale", s * Vector3(1.06, 0.94, 1.06), 0.06)
+	tween.tween_property(mesh, "scale", s, 0.12)
+
+
 func _hit_enemy(enemy: Node) -> void:
 	# Aplicar daño al enemigo
 	if enemy.has_method("take_damage"):
 		var damage = get_attack_damage()
 		var damage_dealt = enemy.take_damage(damage, _player)
 		if damage_dealt:
+			CombatSfx.play(self, SFX_HIT, -2.0)
 			enemy_hit.emit(enemy, damage)
 			
 			# Verificar si el enemigo murió
@@ -118,7 +140,10 @@ func _hit_enemy(enemy: Node) -> void:
 
 
 func take_damage(amount: float, source: Node = null) -> bool:
-	return _health_system.take_damage(amount, source)
+	var a := amount
+	if combat_balance:
+		a *= combat_balance.damage_taken_multiplier
+	return _health_system.take_damage(a, source)
 
 
 func heal(amount: float) -> bool:
@@ -149,6 +174,7 @@ func _on_player_death() -> void:
 
 
 func _on_health_damage_taken(amount: float, _source: Node) -> void:
+	CombatSfx.play(self, SFX_HURT, -1.0)
 	player_took_damage.emit(amount)
 
 
@@ -162,10 +188,12 @@ func get_max_health() -> float:
 
 
 func get_attack_damage() -> float:
-	# Calcular daño basado en nivel si hay sistema de experiencia
+	var d: float = base_attack_damage
 	if _experience_system:
-		return _experience_system.attack_damage
-	return base_attack_damage
+		d = _experience_system.attack_damage
+	if combat_balance:
+		d *= combat_balance.player_damage_multiplier
+	return d
 
 
 func _find_experience_system() -> void:
@@ -218,5 +246,7 @@ func _on_enemy_killed(enemy: Node) -> void:
 	var exp_amount := 28
 	if enemy.has_method("get_experience_reward"):
 		exp_amount = int(enemy.call("get_experience_reward"))
+	if combat_balance:
+		exp_amount = int(round(float(exp_amount) * combat_balance.experience_gain_multiplier))
 	_experience_system.gain_experience(exp_amount, "enemy_kill")
 	enemy_killed.emit(enemy, exp_amount)
