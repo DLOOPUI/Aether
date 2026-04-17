@@ -163,6 +163,7 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 		return
 	_player.global_transform = spawn_transform
 	_health_system.current_health = _health_system.max_health
+	_health_system.set_invulnerable(1.0)
 	_player.set_process(true)
 	_player.set_physics_process(true)
 

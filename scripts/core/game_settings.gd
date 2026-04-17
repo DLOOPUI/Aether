@@ -6,6 +6,7 @@ signal gold_changed(new_amount: int)
 const CFG_PATH := &"user://settings.cfg"
 
 var master_volume_linear: float = 1.0
+var sfx_volume_linear: float = 1.0
 ## Multiplicador sobre la sensibilidad base del jugador (0.25 — 2.0).
 var mouse_sensitivity_multiplier: float = 1.0
 var fullscreen: bool = false
@@ -26,6 +27,7 @@ func load_settings() -> void:
 	if cf.load(CFG_PATH) != OK:
 		return
 	master_volume_linear = float(cf.get_value(&"audio", &"master_linear", 1.0))
+	sfx_volume_linear = float(cf.get_value(&"audio", &"sfx_linear", 1.0))
 	mouse_sensitivity_multiplier = float(cf.get_value(&"input", &"mouse_sensitivity_multiplier", 1.0))
 	fullscreen = bool(cf.get_value(&"display", &"fullscreen", false))
 	gold = int(cf.get_value(&"progress", &"gold", 0))
@@ -36,6 +38,7 @@ func save_settings() -> void:
 	var cf := ConfigFile.new()
 	cf.load(CFG_PATH)
 	cf.set_value(&"audio", &"master_linear", master_volume_linear)
+	cf.set_value(&"audio", &"sfx_linear", sfx_volume_linear)
 	cf.set_value(&"input", &"mouse_sensitivity_multiplier", mouse_sensitivity_multiplier)
 	cf.set_value(&"display", &"fullscreen", fullscreen)
 	cf.set_value(&"progress", &"gold", gold)
@@ -53,6 +56,17 @@ func set_master_volume_linear(v: float) -> void:
 	master_volume_linear = clampf(v, 0.0, 1.0)
 	apply_audio()
 	save_settings()
+
+
+func set_sfx_volume_linear(v: float) -> void:
+	sfx_volume_linear = clampf(v, 0.0, 1.0)
+	save_settings()
+
+
+func get_sfx_volume_db() -> float:
+	if sfx_volume_linear <= 0.0001:
+		return -80.0
+	return linear_to_db(sfx_volume_linear)
 
 
 func set_mouse_sensitivity_multiplier(v: float) -> void:

@@ -18,6 +18,7 @@ const EXPERIENCE_SYSTEM := preload("res://scripts/core/experience_system.gd")
 
 var _player: Node3D = null
 var _vfx_layer: CanvasLayer
+var _hit_flash: ColorRect = null
 var _death_overlay: CanvasLayer = null
 
 
@@ -26,6 +27,11 @@ func _ready() -> void:
 	_vfx_layer = CanvasLayer.new()
 	_vfx_layer.layer = 45
 	add_child(_vfx_layer)
+	_hit_flash = ColorRect.new()
+	_hit_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hit_flash.color = Color(0.9, 0.12, 0.12, 0.0)
+	_vfx_layer.add_child(_hit_flash)
 	_setup_player()
 	_setup_enemies()
 	_connect_combat_feedback()
@@ -228,6 +234,10 @@ func _on_pc_enemy_hit(enemy: Node, damage: float) -> void:
 
 func _on_pc_player_hit(amount: float) -> void:
 	_spawn_damage_popup(_player.global_position + Vector3(0.0, 1.2, 0.0), amount, Color(1.0, 0.38, 0.38), true)
+	if is_instance_valid(_hit_flash):
+		_hit_flash.color.a = 0.22
+		var t := create_tween()
+		t.tween_property(_hit_flash, "color:a", 0.0, 0.2)
 
 
 func _spawn_damage_popup(world_pos: Vector3, amount: float, color: Color, is_player: bool) -> void:
