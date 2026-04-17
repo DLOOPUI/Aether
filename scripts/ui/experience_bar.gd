@@ -88,8 +88,7 @@ func _update_display() -> void:
 	var max_width = $Background.size.x - 8
 	_exp_fill.size.x = max_width * exp_percent
 	
-	# Actualizar texto
-	_exp_text.text = "Nivel %d" % _current_level
+	_exp_text.text = "Nv.%d  %d / %d XP" % [_current_level, _current_exp, _exp_to_next]
 	
 	# Cambiar color de la barra según nivel
 	var stylebox = _exp_fill.get_theme_stylebox("panel").duplicate()

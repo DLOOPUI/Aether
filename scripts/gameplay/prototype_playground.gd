@@ -17,12 +17,18 @@ const EXPERIENCE_SYSTEM := preload("res://scripts/core/experience_system.gd")
 @onready var _enemy_spawns: Array[Marker3D] = []
 
 var _player: Node3D = null
+var _vfx_layer: CanvasLayer
+var _death_overlay: CanvasLayer = null
 
 
 func _ready() -> void:
 	_setup_inputs()
+	_vfx_layer = CanvasLayer.new()
+	_vfx_layer.layer = 45
+	add_child(_vfx_layer)
 	_setup_player()
 	_setup_enemies()
+	_connect_combat_feedback()
 	_pause.hide_pause()
 	_pause.resume_pressed.connect(_on_pause_resume)
 	_pause.main_menu_pressed.connect(_on_pause_main_menu)
@@ -31,6 +37,8 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event == null:
+		return
+	if is_instance_valid(_death_overlay):
 		return
 	if DialogueManager.is_dialogue_active():
 		return
@@ -133,12 +141,13 @@ func _setup_inputs() -> void:
 
 
 func _setup_player() -> void:
-	# Instanciar jugador con combate
 	_player = PLAYER_WITH_COMBAT.instantiate()
-	_player.global_transform = _player_spawn.global_transform
+	var spawn_xf := Transform3D(Basis.IDENTITY, Vector3(0.0, 2.5, 0.0))
+	if is_instance_valid(_player_spawn):
+		spawn_xf = _player_spawn.global_transform
+	_player.global_transform = spawn_xf
 	add_child(_player)
 	_player.add_to_group("player")
-	print("Jugador con combate creado")
 	
 	# Añadir sistema de experiencia al jugador
 	_add_experience_system()
@@ -201,22 +210,101 @@ func _add_experience_ui() -> void:
 	if EXPERIENCE_BAR_UI:
 		var exp_bar = EXPERIENCE_BAR_UI.instantiate()
 		add_child(exp_bar)
-		print("UI de experiencia añadida")
 
 
-func _process(delta: float) -> void:
-	# Debug: mostrar info del jugador (solo si no hay UI)
-	if _player and _player.has_node("PlayerCombat"):
-		var combat = _player.get_node("PlayerCombat")
-		if combat.has_method("get_current_health"):
-			var health = combat.get_current_health()
-			var max_health = combat.get_max_health()
-			if Engine.get_frames_drawn() % 300 == 0:  # Cada 5 segundos aprox
-				print("Salud del jugador: ", health, " / ", max_health)
-	
-	# Debug: mostrar experiencia si existe
-	if _player and _player.has_node("ExperienceSystem"):
-		var exp_system = _player.get_node("ExperienceSystem") as ExperienceSystem
-		if exp_system and Engine.get_frames_drawn() % 300 == 0:
-			var info = exp_system.get_experience_info()
-			print("Experiencia: ", info.current, "/", info.to_next, " (Nivel ", exp_system.get_level(), ")")
+func _connect_combat_feedback() -> void:
+	if not _player.has_node("PlayerCombat"):
+		return
+	var pc: Node = _player.get_node("PlayerCombat")
+	pc.enemy_hit.connect(_on_pc_enemy_hit)
+	pc.player_took_damage.connect(_on_pc_player_hit)
+	pc.player_died.connect(_on_pc_player_died)
+
+
+func _on_pc_enemy_hit(enemy: Node, damage: float) -> void:
+	if enemy is Node3D:
+		_spawn_damage_popup((enemy as Node3D).global_position + Vector3(0.0, 0.9, 0.0), damage, Color(1.0, 0.92, 0.35), false)
+
+
+func _on_pc_player_hit(amount: float) -> void:
+	_spawn_damage_popup(_player.global_position + Vector3(0.0, 1.2, 0.0), amount, Color(1.0, 0.38, 0.38), true)
+
+
+func _spawn_damage_popup(world_pos: Vector3, amount: float, color: Color, is_player: bool) -> void:
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	var screen := cam.unproject_position(world_pos)
+	var lab := Label.new()
+	var v := int(round(amount))
+	lab.text = ("-%d" % v) if is_player else str(v)
+	lab.add_theme_color_override("font_color", color)
+	lab.add_theme_font_size_override("font_size", 22)
+	lab.position = screen + Vector2(-18.0, -12.0)
+	_vfx_layer.add_child(lab)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(lab, "position", screen + Vector2(-18.0, -48.0), 0.55).set_ease(Tween.EASE_OUT)
+	tween.tween_property(lab, "modulate:a", 0.0, 0.55)
+	tween.finished.connect(lab.queue_free)
+
+
+func _on_pc_player_died() -> void:
+	get_tree().paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if is_instance_valid(_death_overlay):
+		_death_overlay.queue_free()
+	_death_overlay = _create_death_overlay()
+	add_child(_death_overlay)
+
+
+func _create_death_overlay() -> CanvasLayer:
+	var layer := CanvasLayer.new()
+	layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	layer.layer = 120
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0.0, 0.0, 0.0, 0.55)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	layer.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(center)
+	var panel := PanelContainer.new()
+	center.add_child(panel)
+	var vbox := VBoxContainer.new()
+	panel.add_child(vbox)
+	var title := Label.new()
+	title.text = "Has caído"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+	var btn_retry := Button.new()
+	btn_retry.text = "Reintentar"
+	btn_retry.pressed.connect(_on_death_retry.bind(layer))
+	vbox.add_child(btn_retry)
+	var btn_menu := Button.new()
+	btn_menu.text = "Menú principal"
+	btn_menu.pressed.connect(_on_death_menu.bind(layer))
+	vbox.add_child(btn_menu)
+	return layer
+
+
+func _on_death_retry(layer: CanvasLayer) -> void:
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	layer.queue_free()
+	_death_overlay = null
+	var pc: Node = _player.get_node("PlayerCombat")
+	if pc.has_method("respawn_at"):
+		var xf := Transform3D(Basis.IDENTITY, Vector3(0.0, 2.5, 0.0))
+		if is_instance_valid(_player_spawn):
+			xf = _player_spawn.global_transform
+		pc.call("respawn_at", xf)
+
+
+func _on_death_menu(layer: CanvasLayer) -> void:
+	get_tree().paused = false
+	layer.queue_free()
+	_death_overlay = null
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().change_scene_to_file(MAIN_MENU)

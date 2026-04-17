@@ -4,6 +4,8 @@ extends Node
 signal attack_triggered
 signal enemy_hit(enemy: Node, damage: float)
 signal enemy_killed(enemy: Node, experience_gained: int)
+signal player_died
+signal player_took_damage(amount: float)
 
 @export var base_attack_damage: float = 20.0
 @export var attack_range: float = 2.5
@@ -11,7 +13,6 @@ signal enemy_killed(enemy: Node, experience_gained: int)
 @export var attack_radius: float = 1.2
 
 var _attack_timer: float = 0.0
-var _is_attacking: bool = false
 var _experience_system: ExperienceSystem = null
 
 @onready var _player: CharacterBody3D = get_parent()
@@ -25,6 +26,7 @@ func _ready() -> void:
 		add_child(_health_system)
 	
 	_health_system.health_depleted.connect(_on_player_death)
+	_health_system.damage_taken.connect(_on_health_damage_taken)
 	call_deferred("_find_experience_system")
 
 
@@ -39,7 +41,6 @@ func _process(delta: float) -> void:
 
 func _perform_attack() -> void:
 	_attack_timer = attack_cooldown
-	_is_attacking = true
 	attack_triggered.emit()
 	
 	# Detectar enemigos en el área de ataque
@@ -49,18 +50,29 @@ func _perform_attack() -> void:
 	
 	# Reset después de un breve momento
 	await get_tree().create_timer(0.3).timeout
-	_is_attacking = false
+
+
+func _attack_forward_horizontal() -> Vector3:
+	var fwd := -_player.global_transform.basis.z
+	fwd.y = 0.0
+	if fwd.length_squared() < 0.0001:
+		return Vector3.FORWARD
+	return fwd.normalized()
+
+
+func _attack_origin() -> Vector3:
+	return _player.global_position + Vector3(0.0, 0.85, 0.0)
 
 
 func _detect_enemies_in_range() -> Array:
 	var enemies = []
-	
-	# Rayo hacia adelante desde la posición del jugador
+	var fwd := _attack_forward_horizontal()
+	var origin := _attack_origin()
 	var space_state = _player.get_world_3d().direct_space_state
 	var query = PhysicsRayQueryParameters3D.create(
-		_player.global_position,
-		_player.global_position + _player.global_transform.basis.z * -attack_range * 1.5,
-		0b1  # Colisión con layer 1 (enemigos)
+		origin,
+		origin + fwd * attack_range * 1.5,
+		0b1
 	)
 	
 	var result = space_state.intersect_ray(query)
@@ -74,13 +86,17 @@ func _detect_enemies_in_range() -> Array:
 	var sphere = SphereShape3D.new()
 	sphere.radius = attack_radius
 	area_query.shape = sphere
-	area_query.transform = Transform3D.IDENTITY.translated(_player.global_position)
-	area_query.collision_mask = 0b1  # Layer de enemigos
+	area_query.transform = Transform3D.IDENTITY.translated(origin)
+	area_query.collision_mask = 0b1
 	
 	var area_results = space_state.intersect_shape(area_query)
 	for area_result in area_results:
 		var collider = area_result.collider
 		if collider and collider.has_method("take_damage") and not enemies.has(collider):
+			var to_target := (collider as Node3D).global_position - _player.global_position
+			to_target.y = 0.0
+			if to_target.length_squared() > 0.0001 and fwd.dot(to_target.normalized()) < 0.2:
+				continue
 			enemies.append(collider)
 	
 	return enemies
@@ -117,12 +133,23 @@ func is_alive() -> bool:
 	return _health_system.is_alive()
 
 
+func respawn_at(spawn_transform: Transform3D) -> void:
+	if not _health_system:
+		return
+	_player.global_transform = spawn_transform
+	_health_system.current_health = _health_system.max_health
+	_player.set_process(true)
+	_player.set_physics_process(true)
+
+
 func _on_player_death() -> void:
-	print("Player died!")
-	# Aquí iría la lógica de muerte: animación, respawn, etc.
-	# Por ahora solo desactivamos el control
+	player_died.emit()
 	_player.set_process(false)
 	_player.set_physics_process(false)
+
+
+func _on_health_damage_taken(amount: float, _source: Node) -> void:
+	player_took_damage.emit(amount)
 
 
 # API para UI/otros sistemas
@@ -186,9 +213,10 @@ func _sync_max_health_from_experience() -> void:
 
 
 func _on_enemy_killed(enemy: Node) -> void:
-	# Otorgar experiencia por matar enemigo
-	if _experience_system:
-		var exp_amount = 25  # Experiencia base por enemigo básico
-		_experience_system.gain_experience(exp_amount, "enemy_kill")
-		enemy_killed.emit(enemy, exp_amount)
-		print("Experiencia ganada: +", exp_amount, " por matar enemigo")
+	if not _experience_system:
+		return
+	var exp_amount := 28
+	if enemy.has_method("get_experience_reward"):
+		exp_amount = int(enemy.call("get_experience_reward"))
+	_experience_system.gain_experience(exp_amount, "enemy_kill")
+	enemy_killed.emit(enemy, exp_amount)

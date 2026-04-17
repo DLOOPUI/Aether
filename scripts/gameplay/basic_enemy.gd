@@ -167,6 +167,10 @@ func is_alive() -> bool:
 	return _health_system.is_alive() if _health_system else false
 
 
+func get_experience_reward() -> int:
+	return 32
+
+
 func _add_health_bar() -> void:
 	# Cargar y añadir barra de salud 3D
 	var health_bar_scene = preload("res://scenes/ui/enemy_health_bar.tscn")

@@ -266,3 +266,7 @@ func get_max_health() -> float:
 
 func is_alive() -> bool:
 	return _health_system.is_alive() if _health_system else false
+
+
+func get_experience_reward() -> int:
+	return 48

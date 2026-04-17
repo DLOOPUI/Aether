@@ -305,3 +305,7 @@ func is_alive() -> bool:
 
 func get_defense() -> float:
 	return defense
+
+
+func get_experience_reward() -> int:
+	return 110
