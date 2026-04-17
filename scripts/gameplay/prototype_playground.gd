@@ -1,16 +1,17 @@
 extends Node3D
 
 const MAIN_MENU := &"res://scenes/ui/main_menu.tscn"
-const SETTINGS_SCENE := preload("res://scenes/ui/settings.tscn")
-const PLAYER_WITH_COMBAT := preload("res://scenes/gameplay/player_with_combat.tscn")
-const BASIC_ENEMY := preload("res://scenes/gameplay/basic_enemy.tscn")
-const RANGED_ENEMY := preload("res://scenes/gameplay/ranged_enemy.tscn")
-const TANK_ENEMY := preload("res://scenes/gameplay/tank_enemy.tscn")
-const FAST_ENEMY := preload("res://scenes/gameplay/fast_enemy.tscn")
-const HEALTH_BAR_UI := preload("res://scenes/ui/health_bar.tscn")
-const EXPERIENCE_BAR_UI := preload("res://scenes/ui/experience_bar.tscn")
+const SETTINGS_SCENE: PackedScene = preload("res://scenes/ui/settings.tscn")
+const PLAYER_WITH_COMBAT: PackedScene = preload("res://scenes/gameplay/player_with_combat.tscn")
+## Carga en runtime: evita fallos del analizador si alguna escena de enemigo no reimporta aún.
+const ENEMY_SCENE_PATHS: PackedStringArray = [
+	"res://scenes/gameplay/basic_enemy.tscn",
+	"res://scenes/gameplay/ranged_enemy.tscn",
+	"res://scenes/gameplay/tank_enemy.tscn",
+	"res://scenes/gameplay/fast_enemy.tscn",
+]
+const HUD_MMO: PackedScene = preload("res://scenes/ui/hud_mmo.tscn")
 const EXPERIENCE_SYSTEM := preload("res://scripts/core/experience_system.gd")
-const ENEMY_TYPES := [BASIC_ENEMY, RANGED_ENEMY, TANK_ENEMY, FAST_ENEMY]
 
 const BASE_WAVE_ENEMIES := 4
 const MAX_ACTIVE_ENEMIES := 12
@@ -24,6 +25,7 @@ const ENEMY_DAMAGE_GROWTH_PER_WAVE := 0.08
 @onready var _enemy_spawns: Array[Marker3D] = []
 
 var _player: Node3D = null
+var _hud_layer: CanvasLayer
 var _vfx_layer: CanvasLayer
 var _hit_flash: ColorRect = null
 var _death_overlay: CanvasLayer = null
@@ -32,13 +34,21 @@ var _wave_index: int = 0
 var _alive_enemies: Array[Node3D] = []
 var _wave_label: Label = null
 var _stats_label: Label = null
+var _hud_mmo: HudMmo = null
 var _run_time_sec: float = 0.0
 var _kills: int = 0
 var _best_wave_reached: int = 1
+var _enemy_scenes: Array[PackedScene] = []
+var _stats_refresh_timer: float = 0.0
 
 
 func _ready() -> void:
 	_setup_inputs()
+	_load_enemy_scenes()
+	# HUD 2D bajo un CanvasLayer (no colgar Control directamente del Node3D: ocupa mal el viewport).
+	_hud_layer = CanvasLayer.new()
+	_hud_layer.layer = 12
+	add_child(_hud_layer)
 	_vfx_layer = CanvasLayer.new()
 	_vfx_layer.layer = 45
 	add_child(_vfx_layer)
@@ -47,18 +57,12 @@ func _ready() -> void:
 	_hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hit_flash.color = Color(0.9, 0.12, 0.12, 0.0)
 	_vfx_layer.add_child(_hit_flash)
-	_wave_label = Label.new()
-	_wave_label.position = Vector2(18, 12)
-	_wave_label.add_theme_font_size_override("font_size", 20)
-	_wave_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
-	_wave_label.text = "Oleada 1"
-	_vfx_layer.add_child(_wave_label)
-	_stats_label = Label.new()
-	_stats_label.position = Vector2(18, 38)
-	_stats_label.add_theme_font_size_override("font_size", 16)
-	_stats_label.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
-	_vfx_layer.add_child(_stats_label)
 	_setup_player()
+	_hud_mmo = HUD_MMO.instantiate() as HudMmo
+	_hud_layer.add_child(_hud_mmo)
+	_wave_label = _hud_mmo.wave_label
+	_stats_label = _hud_mmo.stats_label
+	_hud_mmo.set_resource_bar_mana_mode(false)
 	_setup_enemies()
 	_connect_combat_feedback()
 	_pause.hide_pause()
@@ -172,6 +176,16 @@ func _setup_inputs() -> void:
 		print("Acción 'attack' configurada")
 
 
+func _load_enemy_scenes() -> void:
+	_enemy_scenes.clear()
+	for path in ENEMY_SCENE_PATHS:
+		var ps: PackedScene = load(path) as PackedScene
+		if ps:
+			_enemy_scenes.append(ps)
+		else:
+			push_error("prototype_playground: no se pudo cargar escena: %s" % path)
+
+
 func _setup_player() -> void:
 	_player = PLAYER_WITH_COMBAT.instantiate()
 	var spawn_xf := Transform3D(Basis.IDENTITY, Vector3(0.0, 2.5, 0.0))
@@ -184,11 +198,6 @@ func _setup_player() -> void:
 	# Añadir sistema de experiencia al jugador
 	_add_experience_system()
 	
-	# Añadir UIs
-	_add_player_health_ui()
-	_add_experience_ui()
-
-
 func _setup_enemies() -> void:
 	# Encontrar todos los Marker3D para spawn de enemigos
 	for child in get_children():
@@ -203,25 +212,12 @@ func _setup_enemies() -> void:
 	_wave_timer.start()
 
 
-func _add_player_health_ui() -> void:
-	if HEALTH_BAR_UI and _player:
-		var health_bar = HEALTH_BAR_UI.instantiate()
-		add_child(health_bar)
-		print("UI de salud del jugador añadida")
-
-
 func _add_experience_system() -> void:
 	if EXPERIENCE_SYSTEM and _player:
 		var exp_system = EXPERIENCE_SYSTEM.new()
 		exp_system.name = "ExperienceSystem"
 		_player.add_child(exp_system)
 		print("Sistema de experiencia añadido al jugador")
-
-
-func _add_experience_ui() -> void:
-	if EXPERIENCE_BAR_UI:
-		var exp_bar = EXPERIENCE_BAR_UI.instantiate()
-		add_child(exp_bar)
 
 
 func _on_wave_timer_timeout() -> void:
@@ -234,16 +230,15 @@ func _on_wave_timer_timeout() -> void:
 
 
 func _spawn_wave(count: int) -> void:
-	if count <= 0:
+	if count <= 0 or _enemy_scenes.is_empty():
 		return
 	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
 	for i in range(count):
-		var scene: PackedScene = ENEMY_TYPES[randi() % ENEMY_TYPES.size()]
+		var scene: PackedScene = _enemy_scenes[randi() % _enemy_scenes.size()]
 		var enemy := scene.instantiate() as Node3D
-		var spawn_pos := _pick_spawn_position(i)
-		enemy.global_position = spawn_pos
-		_apply_wave_scaling(enemy, _wave_index)
 		add_child(enemy)
+		enemy.global_position = _pick_spawn_position(i)
+		_apply_wave_scaling(enemy, _wave_index)
 		_alive_enemies.append(enemy)
 		if enemy.has_signal("enemy_died"):
 			enemy.enemy_died.connect(_on_enemy_died.bind(enemy))
@@ -290,9 +285,25 @@ func _apply_wave_scaling(enemy: Node3D, wave: int) -> void:
 
 func _process(delta: float) -> void:
 	_run_time_sec += delta
-	var mins := int(_run_time_sec) / 60
-	var secs := int(_run_time_sec) % 60
 	_best_wave_reached = maxi(_best_wave_reached, _wave_index + 1)
+	if not _stats_label.visible and (_run_time_sec >= 5.0 or _kills > 0):
+		_stats_label.visible = true
+		_update_stats_line()
+	_stats_refresh_timer += delta
+	if not _stats_label.visible:
+		return
+	if _stats_refresh_timer < 0.5:
+		return
+	_stats_refresh_timer = 0.0
+	_update_stats_line()
+
+
+func _update_stats_line() -> void:
+	if not is_instance_valid(_stats_label) or not _stats_label.visible:
+		return
+	var elapsed := int(floor(_run_time_sec))
+	var mins := int(floor(float(elapsed) / 60.0))
+	var secs := elapsed % 60
 	_stats_label.text = "Tiempo %02d:%02d   Kills %d   Mejor oleada %d" % [mins, secs, _kills, _best_wave_reached]
 
 
@@ -390,6 +401,9 @@ func _on_death_retry(layer: CanvasLayer) -> void:
 	_run_time_sec = 0.0
 	_kills = 0
 	_best_wave_reached = 1
+	if is_instance_valid(_stats_label):
+		_stats_label.visible = false
+	_stats_refresh_timer = 0.0
 	_spawn_wave(BASE_WAVE_ENEMIES)
 	if is_instance_valid(_wave_timer):
 		_wave_timer.start()

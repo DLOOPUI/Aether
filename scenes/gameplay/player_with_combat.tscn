@@ -1,14 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=7 format=3 uid="uid://playercombat001"]
 
 [ext_resource type="Script" path="res://scripts/gameplay/third_person_player.gd" id="1_6q5bir"]
 [ext_resource type="Script" path="res://scripts/gameplay/player_combat.gd" id="2_combat"]
 [ext_resource type="Script" path="res://scripts/core/health_system.gd" id="3_health"]
+[ext_resource type="PackedScene" uid="uid://cutnbp02h1fym" path="res://assets/models/heroes/processed fbx/knight.glb" id="4_knight"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.35
-height = 1.6
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
 radius = 0.35
 height = 1.6
 
@@ -31,8 +28,10 @@ max_pitch_rad = 0.61086524
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("CapsuleMesh_body")
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Knight" parent="Visual" instance=ExtResource("4_knight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)

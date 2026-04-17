@@ -24,15 +24,21 @@ func _ready() -> void:
 	_sprite.visible = false
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if always_face_camera:
-		var camera = get_viewport().get_camera_3d()
+		var camera := get_viewport().get_camera_3d()
 		if camera:
-			look_at(camera.global_position, Vector3.UP)
-	
-	# Seguir al padre
+			var target := camera.global_position
+			var here := global_position
+			var to_cam := target - here
+			if to_cam.length_squared() > 0.0001:
+				var up := Vector3.UP
+				var n := to_cam.normalized()
+				if absf(n.dot(up)) > 0.98:
+					up = Vector3.FORWARD
+				look_at(target, up)
 	if get_parent() is Node3D:
-		global_position = get_parent().global_position + Vector3(0, vertical_offset, 0)
+		global_position = (get_parent() as Node3D).global_position + Vector3(0, vertical_offset, 0)
 
 
 func _connect_to_health_system(system: HealthSystem) -> void:
@@ -86,11 +92,10 @@ func _on_damage_taken(_amount: float, _source: Node) -> void:
 
 
 func _update_display() -> void:
-	var health_percent = _current_health / _max_health if _max_health > 0 else 0.0
-	
-	# Actualizar ancho de la barra
-	var max_width = 96  # 100px - 2px de margen a cada lado
-	_health_fill.size.x = max_width * health_percent
+	var health_percent: float = _current_health / _max_health if _max_health > 0 else 0.0
+	var max_width: float = 96.0
+	var w: float = max_width * health_percent
+	_health_fill.set_deferred(&"size", Vector2(w, _health_fill.size.y))
 	
 	# Cambiar color según salud
 	var stylebox = _health_fill.get_theme_stylebox("panel").duplicate()

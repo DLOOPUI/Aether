@@ -87,9 +87,9 @@ func _on_level_up(new_level: int) -> void:
 func _update_display() -> void:
 	var exp_percent = float(_current_exp) / float(_exp_to_next) if _exp_to_next > 0 else 0.0
 	
-	# Actualizar ancho de la barra
-	var max_width = $Background.size.x - 8
-	_exp_fill.size.x = max_width * exp_percent
+	var max_width: float = $Background.size.x - 8.0
+	var w: float = max_width * exp_percent
+	_exp_fill.set_deferred(&"size", Vector2(w, _exp_fill.size.y))
 	
 	_exp_text.text = "Nv.%d  %d / %d XP" % [_current_level, _current_exp, _exp_to_next]
 	
@@ -180,9 +180,9 @@ func _show_level_up_text() -> void:
 
 
 # API para actualización manual
-func set_experience_info(level: int, exp: int, exp_to_next: int) -> void:
+func set_experience_info(level: int, current_xp: int, exp_to_next: int) -> void:
 	_current_level = level
-	_current_exp = exp
+	_current_exp = current_xp
 	_exp_to_next = exp_to_next
 	
 	_update_display()

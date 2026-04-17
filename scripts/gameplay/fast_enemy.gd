@@ -20,7 +20,7 @@ const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
 ]
 
 signal enemy_died
-signal health_changed(current: float, max: float)
+signal health_changed(current: float, max_hp: float)
 
 var _target: Node3D = null
 var _attack_timer: float = 0.0
@@ -52,7 +52,7 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 3
 
-	if not has_node("MeshInstance3D"):
+	if VisualMeshUtils.find_first_mesh_instance(self) == null:
 		var mesh := MeshInstance3D.new()
 		mesh.mesh = BoxMesh.new()
 		(mesh.mesh as BoxMesh).size = Vector3(0.6, 1.2, 0.6)
@@ -178,18 +178,17 @@ func _get_separation_force() -> Vector3:
 
 
 func _update_speed_visuals() -> void:
-	var mesh = get_node_or_null("MeshInstance3D")
-	if mesh:
-		# Escalar ligeramente en dirección del movimiento
+	var vis := get_node_or_null("Visual") as Node3D
+	if vis:
 		var speed_factor = velocity.length() / move_speed
 		var target_scale = Vector3(1.0, 1.0, 1.0 + speed_factor * 0.3)
-		mesh.scale = mesh.scale.lerp(target_scale, 0.1)
-		
-		# Cambiar color durante sprint
+		vis.scale = vis.scale.lerp(target_scale, 0.1)
 		if _is_sprinting:
-			var material = mesh.get_surface_override_material(0).duplicate()
-			material.albedo_color = Color(1.0, 1.0, 0.5)  # Amarillo brillante
-			mesh.set_surface_override_material(0, material)
+			var mesh := VisualMeshUtils.find_first_mesh_instance(self)
+			if mesh:
+				var material := VisualMeshUtils.duplicate_surface0_as_override(mesh)
+				if material:
+					material.albedo_color = Color(1.0, 1.0, 0.5)
 
 
 func _update_attack() -> void:
@@ -236,12 +235,12 @@ func _quick_retreat() -> void:
 
 
 func _play_attack_effect() -> void:
-	var mesh = get_node_or_null("MeshInstance3D")
-	if mesh:
+	var vis := get_node_or_null("Visual") as Node3D
+	if vis:
 		var tween = create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(mesh, "scale", Vector3(1.3, 0.7, 1.3), 0.1)
-		tween.tween_property(mesh, "scale", Vector3(1.0, 1.0, 1.0), 0.2)
+		tween.tween_property(vis, "scale", Vector3(1.3, 0.7, 1.3), 0.1)
+		tween.tween_property(vis, "scale", Vector3(1.0, 1.0, 1.0), 0.2)
 
 
 func take_damage(amount: float, source: Node = null) -> bool:
@@ -257,16 +256,7 @@ func take_damage(amount: float, source: Node = null) -> bool:
 	
 	var took_damage = _health_system.take_damage(amount, source)
 	if took_damage:
-		# Feedback visual
-		var mesh = get_node_or_null("MeshInstance3D")
-		if mesh:
-			var original_color = mesh.get_surface_override_material(0).albedo_color
-			mesh.get_surface_override_material(0).albedo_color = Color(1.0, 0.2, 0.2)
-			
-			await get_tree().create_timer(0.1).timeout
-			if is_instance_valid(mesh):
-				mesh.get_surface_override_material(0).albedo_color = original_color
-		
+		VisualMeshUtils.flash_mesh_albedo(self, Color(1.0, 0.2, 0.2), 0.1)
 		# Activar sprint al recibir daño
 		if not _is_sprinting:
 			_is_sprinting = true
@@ -276,22 +266,15 @@ func take_damage(amount: float, source: Node = null) -> bool:
 
 
 func _play_evasion_effect() -> void:
-	var mesh = get_node_or_null("MeshInstance3D")
-	if mesh:
-		var tween = create_tween()
-		tween.set_parallel(true)
-		
-		# Efecto de desvanecimiento rápido
-		tween.tween_property(mesh, "modulate:a", 0.3, 0.1)
-		tween.tween_property(mesh, "modulate:a", 1.0, 0.1).set_delay(0.1)
-		
-		# Movimiento rápido a un lado
-		var evade_dir = Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
-		var original_pos = position
-		var evade_pos = position + evade_dir * 2.0
-		
-		tween.tween_property(self, "position", evade_pos, 0.2)
-		tween.tween_property(self, "position", original_pos + evade_dir * 0.5, 0.3)
+	VisualMeshUtils.flash_mesh_albedo(self, Color(1.0, 1.0, 1.0), 0.12)
+	var evade_dir := Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1))
+	if evade_dir.length_squared() < 0.001:
+		evade_dir = Vector3(1, 0, 0)
+	evade_dir = evade_dir.normalized()
+	var original_pos := position
+	var tw2 := create_tween()
+	tw2.tween_property(self, "position", original_pos + evade_dir * 2.0, 0.2)
+	tw2.tween_property(self, "position", original_pos + evade_dir * 0.5, 0.3)
 
 
 func _on_death() -> void:
@@ -316,7 +299,7 @@ func _on_health_changed(current: float, max_hp: float) -> void:
 
 
 func _add_health_bar() -> void:
-	var health_bar_scene = preload("res://scenes/ui/enemy_health_bar.tscn")
+	var health_bar_scene: PackedScene = load("res://scenes/ui/enemy_health_bar.tscn") as PackedScene
 	if health_bar_scene:
 		var health_bar = health_bar_scene.instantiate()
 		health_bar.health_system = _health_system
@@ -328,27 +311,23 @@ func _generate_drops() -> void:
 	for drop_info in drop_table:
 		var chance = clampf(drop_info.get("chance", 0.0) * chance_mult, 0.0, 1.0)
 		if randf() <= chance:
-			var item_id = drop_info.get("item_id", "")
+			var drop_id: String = str(drop_info.get("item_id", ""))
 			var min_amount = drop_info.get("min_amount", 1)
 			var max_amount = drop_info.get("max_amount", 1)
-			var amount = randi_range(min_amount, max_amount)
-			
-			_spawn_item_drop(item_id, amount)
+			var qty: int = randi_range(min_amount, max_amount)
+			_spawn_item_drop(drop_id, qty)
 
 
-func _spawn_item_drop(item_id: String, amount: int) -> void:
-	var item_scene = preload("res://scenes/gameplay/item_drop.tscn")
+func _spawn_item_drop(drop_id: String, qty: int) -> void:
+	var item_scene: PackedScene = load("res://scenes/gameplay/item_drop.tscn") as PackedScene
 	if not item_scene:
 		return
-	
-	var item = item_scene.instantiate()
-	item.item_id = item_id
-	item.amount = amount
-	
-	var offset = Vector3(randf_range(-0.8, 0.8), 0.3, randf_range(-0.8, 0.8))
-	item.global_position = global_position + offset
-	
+	var item := item_scene.instantiate() as ItemDrop
+	item.item_id = drop_id
+	item.amount = qty
+	var offset := Vector3(randf_range(-0.8, 0.8), 0.3, randf_range(-0.8, 0.8))
 	get_parent().add_child(item)
+	item.global_position = global_position + offset
 
 
 # API

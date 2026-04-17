@@ -57,9 +57,6 @@ func _perform_attack() -> void:
 	var enemies = _detect_enemies_in_range()
 	for enemy in enemies:
 		_hit_enemy(enemy)
-	
-	# Reset después de un breve momento
-	await get_tree().create_timer(0.3).timeout
 
 
 func _attack_forward_horizontal() -> Vector3:

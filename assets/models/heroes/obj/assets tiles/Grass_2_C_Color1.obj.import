@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b1mfd3cayf0ur"
+path="res://.godot/imported/Grass_2_C_Color1.obj-53f2464408e56114f9eb3eb03e62aacc.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Grass_2_C_Color1.obj-53f2464408e56114f9eb3eb03e62aacc.mesh"]
+
+source_file="res://assets/models/heroes/obj/assets tiles/Grass_2_C_Color1.obj"
+dest_files=["res://.godot/imported/Grass_2_C_Color1.obj-53f2464408e56114f9eb3eb03e62aacc.mesh", "res://.godot/imported/Grass_2_C_Color1.obj-53f2464408e56114f9eb3eb03e62aacc.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

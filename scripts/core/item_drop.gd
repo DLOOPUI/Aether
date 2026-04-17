@@ -171,7 +171,7 @@ func _start_idle_animation() -> void:
 	bob_tween.tween_property(self, "position:y", _original_y, _bob_speed / 2)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if _collected:
 		return
 	
@@ -234,22 +234,26 @@ func _on_pickup_success() -> void:
 	# Desactivar colisiones
 	_collision.disabled = true
 	
-	# Animación de recogida
-	var tween = create_tween()
+	var tween := create_tween()
 	tween.set_parallel(true)
-	
-	# Escalar hacia arriba y desaparecer
 	tween.tween_property(_mesh, "scale", Vector3(1.5, 1.5, 1.5), 0.3)
-	tween.tween_property(_mesh, "modulate:a", 0.0, 0.3)
-	
-	# Mover hacia arriba
 	tween.tween_property(self, "position:y", position.y + 1.0, 0.3)
-	
+	# MeshInstance3D no tiene modulate (solo CanvasItem): alpha vía material.
+	var sm := _mesh.get_surface_override_material(0) as StandardMaterial3D
+	if sm:
+		var fade_mat := sm.duplicate() as StandardMaterial3D
+		fade_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_mesh.set_surface_override_material(0, fade_mat)
+		var bc: Color = fade_mat.albedo_color
+		tween.tween_method(
+			func(a: float) -> void:
+				fade_mat.albedo_color = Color(bc.r, bc.g, bc.b, a),
+			bc.a,
+			0.0,
+			0.3
+		)
 	await tween.finished
-	
-	# Eliminar
 	queue_free()
-	
 	print("Item recogido: ", _item_data.name, " x", amount)
 
 
@@ -266,16 +270,13 @@ func set_item_data(data: Dictionary) -> void:
 
 
 # API para spawnear items
-static func spawn_item(world: Node3D, position: Vector3, item_id: String, amount: int = 1) -> ItemDrop:
-	var item_scene = preload("res://scenes/gameplay/item_drop.tscn")
+static func spawn_item(world: Node3D, world_pos: Vector3, p_item_id: String, p_amount: int = 1) -> ItemDrop:
+	var item_scene := load("res://scenes/gameplay/item_drop.tscn") as PackedScene
 	if not item_scene:
 		return null
-	
-	var item = item_scene.instantiate() as ItemDrop
-	item.item_id = item_id
-	item.amount = amount
-	item.global_position = position
-	
+	var item := item_scene.instantiate() as ItemDrop
+	item.item_id = p_item_id
+	item.amount = p_amount
 	world.add_child(item)
-	
+	item.global_position = world_pos
 	return item

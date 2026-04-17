@@ -20,7 +20,7 @@ const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
 ]
 
 signal enemy_died
-signal health_changed(current: float, max: float)
+signal health_changed(current: float, max_hp: float)
 
 var _target: Node3D = null
 var _attack_timer: float = 0.0
@@ -51,7 +51,7 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 3
 
-	if not has_node("MeshInstance3D"):
+	if VisualMeshUtils.find_first_mesh_instance(self) == null:
 		var mesh := MeshInstance3D.new()
 		mesh.mesh = BoxMesh.new()
 		(mesh.mesh as BoxMesh).size = Vector3(1.2, 2.0, 1.2)
@@ -207,12 +207,12 @@ func _attack_target() -> void:
 
 
 func _play_attack_effect() -> void:
-	var mesh = get_node_or_null("MeshInstance3D")
-	if mesh:
-		var original_scale = mesh.scale
+	var vis := get_node_or_null("Visual") as Node3D
+	if vis:
+		var original_scale := vis.scale
 		var tween = create_tween()
-		tween.tween_property(mesh, "scale", original_scale * 1.2, 0.1)
-		tween.tween_property(mesh, "scale", original_scale, 0.2)
+		tween.tween_property(vis, "scale", original_scale * 1.2, 0.1)
+		tween.tween_property(vis, "scale", original_scale, 0.2)
 
 
 func take_damage(amount: float, source: Node = null) -> bool:
@@ -227,16 +227,7 @@ func take_damage(amount: float, source: Node = null) -> bool:
 	
 	var took_damage = _health_system.take_damage(actual_damage, source)
 	if took_damage:
-		# Feedback visual
-		var mesh = get_node_or_null("MeshInstance3D")
-		if mesh:
-			var original_color = mesh.get_surface_override_material(0).albedo_color
-			mesh.get_surface_override_material(0).albedo_color = Color(1.0, 0.3, 0.3)
-			
-			await get_tree().create_timer(0.3).timeout
-			if is_instance_valid(mesh):
-				mesh.get_surface_override_material(0).albedo_color = original_color
-	
+		VisualMeshUtils.flash_mesh_albedo(self, Color(1.0, 0.3, 0.3), 0.3)
 	return took_damage
 
 
@@ -260,24 +251,21 @@ func _on_death() -> void:
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_changed.emit(current, max_hp)
 	
-	# Cambiar color según salud restante
-	var mesh = get_node_or_null("MeshInstance3D")
+	var mesh := VisualMeshUtils.find_first_mesh_instance(self)
 	if mesh:
 		var health_percent = current / max_hp
-		var material = mesh.get_surface_override_material(0).duplicate()
-		
-		if health_percent > 0.6:
-			material.albedo_color = Color(0.3, 0.1, 0.1)  # Rojo oscuro
-		elif health_percent > 0.3:
-			material.albedo_color = Color(0.4, 0.2, 0.1)  # Marrón
-		else:
-			material.albedo_color = Color(0.5, 0.3, 0.2)  # Marrón claro (dañado)
-		
-		mesh.set_surface_override_material(0, material)
+		var material := VisualMeshUtils.duplicate_surface0_as_override(mesh)
+		if material:
+			if health_percent > 0.6:
+				material.albedo_color = Color(0.3, 0.1, 0.1)
+			elif health_percent > 0.3:
+				material.albedo_color = Color(0.4, 0.2, 0.1)
+			else:
+				material.albedo_color = Color(0.5, 0.3, 0.2)
 
 
 func _add_health_bar() -> void:
-	var health_bar_scene = preload("res://scenes/ui/enemy_health_bar.tscn")
+	var health_bar_scene: PackedScene = load("res://scenes/ui/enemy_health_bar.tscn") as PackedScene
 	if health_bar_scene:
 		var health_bar = health_bar_scene.instantiate()
 		health_bar.health_system = _health_system
@@ -289,27 +277,23 @@ func _generate_drops() -> void:
 	for drop_info in drop_table:
 		var chance = clampf(drop_info.get("chance", 0.0) * chance_mult, 0.0, 1.0)
 		if randf() <= chance:
-			var item_id = drop_info.get("item_id", "")
+			var drop_id: String = str(drop_info.get("item_id", ""))
 			var min_amount = drop_info.get("min_amount", 1)
 			var max_amount = drop_info.get("max_amount", 1)
-			var amount = randi_range(min_amount, max_amount)
-			
-			_spawn_item_drop(item_id, amount)
+			var qty: int = randi_range(min_amount, max_amount)
+			_spawn_item_drop(drop_id, qty)
 
 
-func _spawn_item_drop(item_id: String, amount: int) -> void:
-	var item_scene = preload("res://scenes/gameplay/item_drop.tscn")
+func _spawn_item_drop(drop_id: String, qty: int) -> void:
+	var item_scene: PackedScene = load("res://scenes/gameplay/item_drop.tscn") as PackedScene
 	if not item_scene:
 		return
-	
-	var item = item_scene.instantiate()
-	item.item_id = item_id
-	item.amount = amount
-	
-	var offset = Vector3(randf_range(-1.5, 1.5), 0.5, randf_range(-1.5, 1.5))
-	item.global_position = global_position + offset
-	
+	var item := item_scene.instantiate() as ItemDrop
+	item.item_id = drop_id
+	item.amount = qty
+	var offset := Vector3(randf_range(-1.5, 1.5), 0.5, randf_range(-1.5, 1.5))
 	get_parent().add_child(item)
+	item.global_position = global_position + offset
 
 
 # API

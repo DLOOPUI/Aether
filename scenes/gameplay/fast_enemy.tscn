@@ -1,16 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://fastenemy001"]
 
 [ext_resource type="Script" path="res://scripts/gameplay/fast_enemy.gd" id="1_fast"]
 [ext_resource type="Script" path="res://scripts/core/health_system.gd" id="2_health"]
+[ext_resource type="PackedScene" uid="uid://cc16h21smsi14" path="res://assets/models/enemys/models/minion.fbx" id="3_model"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_collision"]
 size = Vector3(0.6, 1.2, 0.6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_body"]
-size = Vector3(0.6, 1.2, 0.6)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yellow"]
-albedo_color = Color(0.8, 0.8, 0.2)
 
 [node name="FastEnemy" type="CharacterBody3D"]
 script = ExtResource("1_fast")
@@ -26,9 +21,9 @@ evasion_chance = 0.3
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_collision")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_body")
-material_override = SubResource("StandardMaterial3D_yellow")
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Minion" parent="Visual" instance=ExtResource("3_model")]
 
 [node name="HealthSystem" type="Node" parent="."]
 script = ExtResource("2_health")

@@ -1,16 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://tankenemy001"]
 
 [ext_resource type="Script" path="res://scripts/gameplay/tank_enemy.gd" id="1_tank"]
 [ext_resource type="Script" path="res://scripts/core/health_system.gd" id="2_health"]
+[ext_resource type="PackedScene" uid="uid://cqglj12c0qijg" path="res://assets/models/enemys/models/guerrero.fbx" id="3_model"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_collision"]
 size = Vector3(1.2, 2.0, 1.2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_body"]
-size = Vector3(1.2, 2.0, 1.2)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_darkred"]
-albedo_color = Color(0.3, 0.1, 0.1)
 
 [node name="TankEnemy" type="CharacterBody3D"]
 script = ExtResource("1_tank")
@@ -25,9 +20,9 @@ defense = 10.0
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_collision")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_body")
-material_override = SubResource("StandardMaterial3D_darkred")
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Guerrero" parent="Visual" instance=ExtResource("3_model")]
 
 [node name="HealthSystem" type="Node" parent="."]
 script = ExtResource("2_health")

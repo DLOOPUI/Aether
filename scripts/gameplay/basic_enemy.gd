@@ -18,7 +18,7 @@ const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
 ]
 
 signal enemy_died
-signal health_changed(current: float, max: float)
+signal health_changed(current: float, max_hp: float)
 
 var _target: Node3D = null
 var _attack_timer: float = 0.0
@@ -44,7 +44,7 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 3
 
-	if not has_node("MeshInstance3D"):
+	if VisualMeshUtils.find_first_mesh_instance(self) == null:
 		var mesh := MeshInstance3D.new()
 		mesh.mesh = BoxMesh.new()
 		var material := StandardMaterial3D.new()
@@ -135,17 +135,7 @@ func take_damage(amount: float, source: Node = null) -> bool:
 	
 	var took_damage = _health_system.take_damage(amount, source)
 	if took_damage:
-		# Feedback visual: cambiar color temporalmente
-		var mesh = get_node_or_null("MeshInstance3D")
-		if mesh:
-			var original_color = mesh.get_surface_override_material(0).albedo_color
-			mesh.get_surface_override_material(0).albedo_color = Color(1.0, 0.5, 0.5)
-			
-			# Restaurar color después de 0.2 segundos
-			await get_tree().create_timer(0.2).timeout
-			if is_instance_valid(mesh):
-				mesh.get_surface_override_material(0).albedo_color = original_color
-	
+		VisualMeshUtils.flash_mesh_albedo(self, Color(1.0, 0.5, 0.5), 0.2)
 	return took_damage
 
 
@@ -190,8 +180,8 @@ func get_experience_reward() -> int:
 
 
 func _add_health_bar() -> void:
-	# Cargar y añadir barra de salud 3D
-	var health_bar_scene = preload("res://scenes/ui/enemy_health_bar.tscn")
+	# Cargar en runtime (evita que el fallo de la escena bloquee preload del enemigo)
+	var health_bar_scene: PackedScene = load("res://scenes/ui/enemy_health_bar.tscn") as PackedScene
 	if health_bar_scene:
 		var health_bar = health_bar_scene.instantiate()
 		health_bar.health_system = _health_system
@@ -216,33 +206,24 @@ func _generate_drops() -> void:
 	for drop_info in drop_table:
 		var chance = clampf(drop_info.get("chance", 0.0) * chance_mult, 0.0, 1.0)
 		if randf() <= chance:
-			var item_id = drop_info.get("item_id", "")
+			var drop_id: String = str(drop_info.get("item_id", ""))
 			var min_amount = drop_info.get("min_amount", 1)
 			var max_amount = drop_info.get("max_amount", 1)
-			var amount = randi_range(min_amount, max_amount)
-			
-			# Spawnear el item
-			_spawn_item_drop(item_id, amount)
+			var qty: int = randi_range(min_amount, max_amount)
+			_spawn_item_drop(drop_id, qty)
 
 
-func _spawn_item_drop(item_id: String, amount: int) -> void:
-	# Cargar escena de item drop
-	var item_scene = preload("res://scenes/gameplay/item_drop.tscn")
+func _spawn_item_drop(drop_id: String, qty: int) -> void:
+	var item_scene: PackedScene = load("res://scenes/gameplay/item_drop.tscn") as PackedScene
 	if not item_scene:
 		return
-	
-	var item = item_scene.instantiate()
-	item.item_id = item_id
-	item.amount = amount
-	
-	# Posicionar cerca del enemigo
-	var offset = Vector3(randf_range(-1, 1), 0.5, randf_range(-1, 1))
-	item.global_position = global_position + offset
-	
-	# Añadir al mismo árbol que el enemigo
+	var item := item_scene.instantiate() as ItemDrop
+	item.item_id = drop_id
+	item.amount = qty
+	var offset := Vector3(randf_range(-1, 1), 0.5, randf_range(-1, 1))
 	get_parent().add_child(item)
-	
-	print("Drop generado: ", item_id, " x", amount)
+	item.global_position = global_position + offset
+	print("Drop generado: ", drop_id, " x", qty)
 
 
 func _drop_chance_multiplier() -> float:

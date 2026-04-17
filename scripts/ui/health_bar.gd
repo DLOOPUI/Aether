@@ -57,9 +57,10 @@ func _on_health_changed(current: float, max_health: float) -> void:
 func _update_health_display(current: float, max_health: float) -> void:
 	var health_percent = current / max_health if max_health > 0 else 0.0
 	
-	# Actualizar ancho de la barra
-	var max_width = $Background.size.x - 8  # 4px de margen a cada lado
-	_health_fill.size.x = max_width * health_percent
+	# Ancho de la barra (diferido evita aviso de anchors vs size en el mismo frame)
+	var max_width: float = $Background.size.x - 8.0
+	var w: float = max_width * health_percent
+	_health_fill.set_deferred(&"size", Vector2(w, _health_fill.size.y))
 	
 	# Actualizar texto
 	if show_text:

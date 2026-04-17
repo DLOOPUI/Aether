@@ -1,0 +1,101 @@
+# Blender 5.0.1 MTL File: 'Link.blend'
+# www.blender.org
+
+newmtl MI_body.003
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_nml.png
+
+newmtl MI_body.004
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_nml.png
+
+newmtl MI_body.005
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_nml.png
+
+newmtl MI_ear_Vis.001
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_ear_alb.0.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_ear_alb.0.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_ear_nml.png
+
+newmtl MI_eye_Vis
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_eye_alb.0.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_eye_alb.0.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_eye_nml.png
+
+newmtl MI_hair_Vis.002
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_hair_alb.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_hair_alb.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_hair_nml.png
+
+newmtl MI_hat_Vis
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_alb.0.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_body_nml.png
+
+newmtl MI_hoodhair_Vis
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_hair_alb.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_hair_alb.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_hair_nml.png
+
+newmtl MI_mouth_Vis
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_mouth_alb.2.png
+map_d C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_mouth_alb.2.png
+map_Bump -bm 0.300000 C:/Users/david/Downloads/Nintendo Switch - The Legend of Zelda_ Echoes of Wisdom - Playable Characters - Princess Zelda/Princess Zelda/Player/MI_mouth_nml.png
