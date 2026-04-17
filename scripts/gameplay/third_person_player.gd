@@ -11,11 +11,34 @@ extends CharacterBody3D
 
 var _pitch: float = deg_to_rad(-12.0)
 
+@onready var character = [
+	$knight,
+	$barbarian,
+	$mage,
+	$ranger,
+	$rogue,
+	$roguehooded
+]
+@onready var my = 0
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_spring_arm.rotation.x = _pitch
 	mouse_sensitivity *= GameSettings.mouse_sensitivity_multiplier
+	visible()
+
+func visible():
+	var members = get_tree().get_nodes_in_group("Characters")
+	var select = character[my]
+	
+	print(my)
+	
+	for i in members:
+		
+		if i == select:
+			i.visible = true
+		else:
+			i.visible = false
 
 
 func _input(event: InputEvent) -> void:
@@ -24,6 +47,10 @@ func _input(event: InputEvent) -> void:
 		_pitch -= event.relative.y * mouse_sensitivity
 		_pitch = clampf(_pitch, min_pitch_rad, max_pitch_rad)
 		_spring_arm.rotation.x = _pitch
+	
+	if Input.is_action_just_pressed("ui_accept"):
+		my += 1
+		visible()
 
 
 func _physics_process(delta: float) -> void:
@@ -61,5 +88,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, move_speed * 2.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, move_speed * 2.0 * delta)
-
+	
+	
+	
 	move_and_slide()
