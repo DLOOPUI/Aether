@@ -50,6 +50,8 @@ func _ready() -> void:
 	add_to_group("tank_enemies")
 	collision_layer = 1
 	collision_mask = 3
+	if has_node("Visual"):
+		VisualMeshUtils.ensure_node3d_visible_recursive($Visual)
 
 	if VisualMeshUtils.find_first_mesh_instance(self) == null:
 		var mesh := MeshInstance3D.new()

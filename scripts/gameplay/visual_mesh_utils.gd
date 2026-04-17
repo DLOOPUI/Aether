@@ -3,6 +3,13 @@ class_name VisualMeshUtils
 ## Utilidades para localizar mallas importadas (GLB/FBX) y efectos de tinte sin mutar materiales compartidos.
 
 
+static func ensure_node3d_visible_recursive(root: Node) -> void:
+	if root is Node3D:
+		(root as Node3D).visible = true
+	for c in root.get_children():
+		ensure_node3d_visible_recursive(c)
+
+
 static func find_first_mesh_instance(root: Node) -> MeshInstance3D:
 	if root == null:
 		return null
