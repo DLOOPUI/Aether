@@ -19,6 +19,16 @@ var _pitch: float = deg_to_rad(-12.0)
 	$rogue,
 	$roguehooded
 ]
+
+@onready var animations = [
+	$knight_player,
+	$barbarian_player,
+	$mage_player,
+	$ranger_player,
+	$rogue_player,
+	$roguehooded_player
+]
+
 @onready var my = 0
 
 func _ready() -> void:
@@ -47,10 +57,6 @@ func _input(event: InputEvent) -> void:
 		_pitch -= event.relative.y * mouse_sensitivity
 		_pitch = clampf(_pitch, min_pitch_rad, max_pitch_rad)
 		_spring_arm.rotation.x = _pitch
-	
-	if Input.is_action_just_pressed("ui_accept"):
-		my += 1
-		visible()
 
 
 func _physics_process(delta: float) -> void:
@@ -89,6 +95,21 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, move_speed * 2.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, move_speed * 2.0 * delta)
 	
+	if Input.is_action_pressed("movement"):
+		
+		var nodo = animations[my]
+		
+		nodo.play("Running_B", 0.3)
 	
+	if not Input.is_anything_pressed():
+		
+		var nodo = animations[my]
+		
+		nodo.play("Idle_A", 1.0)
 	
 	move_and_slide()
+	
+	
+	
+	
+	
