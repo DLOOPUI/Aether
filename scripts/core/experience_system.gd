@@ -49,7 +49,6 @@ func _get_enemy_death_signals() -> void:
 
 
 func gain_experience(amount: int, source: String = "") -> void:
-	var old_exp = current_experience
 	current_experience += amount
 	
 	print("Experiencia ganada: +", amount, " (", source, ")")
