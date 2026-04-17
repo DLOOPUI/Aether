@@ -6,3 +6,5 @@ extends Resource
 @export_range(0.1, 5.0, 0.05) var experience_gain_multiplier: float = 1.0
 ## Daño que recibe el jugador (menor = más fácil).
 @export_range(0.25, 3.0, 0.05) var damage_taken_multiplier: float = 1.0
+## Multiplica la probabilidad de drop (1.0 = normal).
+@export_range(0.1, 3.0, 0.05) var drop_chance_multiplier: float = 1.0

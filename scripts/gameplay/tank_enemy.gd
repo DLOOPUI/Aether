@@ -1,6 +1,8 @@
 extends CharacterBody3D
 ## Enemigo tanque: mucha salud, lento, alto daño.
 
+const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
+
 @export var max_health: float = 150.0
 @export var move_speed: float = 1.5
 @export var attack_damage: float = 25.0
@@ -267,8 +269,9 @@ func _add_health_bar() -> void:
 
 
 func _generate_drops() -> void:
+	var chance_mult := _drop_chance_multiplier()
 	for drop_info in drop_table:
-		var chance = drop_info.get("chance", 0.0)
+		var chance = clampf(drop_info.get("chance", 0.0) * chance_mult, 0.0, 1.0)
 		if randf() <= chance:
 			var item_id = drop_info.get("item_id", "")
 			var min_amount = drop_info.get("min_amount", 1)
@@ -309,3 +312,10 @@ func get_defense() -> float:
 
 func get_experience_reward() -> int:
 	return 110
+
+
+func _drop_chance_multiplier() -> float:
+	var balance := ResourceLoader.load(COMBAT_BALANCE_PATH) as CombatBalance
+	if balance:
+		return balance.drop_chance_multiplier
+	return 1.0

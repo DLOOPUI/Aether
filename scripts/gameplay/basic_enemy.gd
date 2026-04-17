@@ -1,6 +1,8 @@
 extends CharacterBody3D
 ## Enemigo básico con IA simple, salud y sistema de daño.
 
+const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
+
 @export var max_health: float = 50.0
 @export var move_speed: float = 3.0
 @export var attack_damage: float = 10.0
@@ -194,8 +196,9 @@ func _notify_death_to_systems() -> void:
 
 func _generate_drops() -> void:
 	# Generar items basados en la drop table
+	var chance_mult := _drop_chance_multiplier()
 	for drop_info in drop_table:
-		var chance = drop_info.get("chance", 0.0)
+		var chance = clampf(drop_info.get("chance", 0.0) * chance_mult, 0.0, 1.0)
 		if randf() <= chance:
 			var item_id = drop_info.get("item_id", "")
 			var min_amount = drop_info.get("min_amount", 1)
@@ -224,3 +227,10 @@ func _spawn_item_drop(item_id: String, amount: int) -> void:
 	get_parent().add_child(item)
 	
 	print("Drop generado: ", item_id, " x", amount)
+
+
+func _drop_chance_multiplier() -> float:
+	var balance := ResourceLoader.load(COMBAT_BALANCE_PATH) as CombatBalance
+	if balance:
+		return balance.drop_chance_multiplier
+	return 1.0

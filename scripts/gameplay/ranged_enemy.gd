@@ -2,6 +2,7 @@ extends CharacterBody3D
 ## Enemigo que ataca a distancia con proyectiles.
 
 const ENEMY_PROJECTILE := preload("res://scripts/gameplay/enemy_projectile_area.gd")
+const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
 
 @export var max_health: float = 40.0
 @export var move_speed: float = 2.5
@@ -231,8 +232,9 @@ func _add_health_bar() -> void:
 
 
 func _generate_drops() -> void:
+	var chance_mult := _drop_chance_multiplier()
 	for drop_info in drop_table:
-		var chance = drop_info.get("chance", 0.0)
+		var chance = clampf(drop_info.get("chance", 0.0) * chance_mult, 0.0, 1.0)
 		if randf() <= chance:
 			var item_id = drop_info.get("item_id", "")
 			var min_amount = drop_info.get("min_amount", 1)
@@ -270,3 +272,10 @@ func is_alive() -> bool:
 
 func get_experience_reward() -> int:
 	return 48
+
+
+func _drop_chance_multiplier() -> float:
+	var balance := ResourceLoader.load(COMBAT_BALANCE_PATH) as CombatBalance
+	if balance:
+		return balance.drop_chance_multiplier
+	return 1.0

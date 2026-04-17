@@ -10,6 +10,11 @@ const FAST_ENEMY := preload("res://scenes/gameplay/fast_enemy.tscn")
 const HEALTH_BAR_UI := preload("res://scenes/ui/health_bar.tscn")
 const EXPERIENCE_BAR_UI := preload("res://scenes/ui/experience_bar.tscn")
 const EXPERIENCE_SYSTEM := preload("res://scripts/core/experience_system.gd")
+const ENEMY_TYPES := [BASIC_ENEMY, RANGED_ENEMY, TANK_ENEMY, FAST_ENEMY]
+
+const BASE_WAVE_ENEMIES := 4
+const MAX_ACTIVE_ENEMIES := 12
+const WAVE_INTERVAL_SEC := 12.0
 
 @onready var _pause: CanvasLayer = $PauseOverlay
 @onready var _npc: Node3D = $NpcPlaza
@@ -20,6 +25,10 @@ var _player: Node3D = null
 var _vfx_layer: CanvasLayer
 var _hit_flash: ColorRect = null
 var _death_overlay: CanvasLayer = null
+var _wave_timer: Timer = null
+var _wave_index: int = 0
+var _alive_enemies: Array[Node3D] = []
+var _wave_label: Label = null
 
 
 func _ready() -> void:
@@ -32,6 +41,12 @@ func _ready() -> void:
 	_hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hit_flash.color = Color(0.9, 0.12, 0.12, 0.0)
 	_vfx_layer.add_child(_hit_flash)
+	_wave_label = Label.new()
+	_wave_label.position = Vector2(18, 12)
+	_wave_label.add_theme_font_size_override("font_size", 20)
+	_wave_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	_wave_label.text = "Oleada 1"
+	_vfx_layer.add_child(_wave_label)
 	_setup_player()
 	_setup_enemies()
 	_connect_combat_feedback()
@@ -168,33 +183,13 @@ func _setup_enemies() -> void:
 	for child in get_children():
 		if child is Marker3D and child.name.begins_with("EnemySpawn"):
 			_enemy_spawns.append(child)
-	
-	# Crear variedad de enemigos
-	var enemy_types = [BASIC_ENEMY, RANGED_ENEMY, TANK_ENEMY, FAST_ENEMY]
-	var enemy_names = ["Básico", "A distancia", "Tanque", "Rápido"]
-	
-	for i in range(4):  # Crear 4 enemigos (uno de cada tipo)
-		if i < _enemy_spawns.size():
-			var enemy_type = enemy_types[i % enemy_types.size()]
-			var enemy_name = enemy_names[i % enemy_names.size()]
-			var enemy = enemy_type.instantiate()
-			enemy.global_transform = _enemy_spawns[i].global_transform
-			add_child(enemy)
-			print("Enemigo ", enemy_name, " creado en posición ", i)
-		else:
-			# Si no hay suficientes spawn points, crear en posiciones aleatorias
-			var enemy_type = enemy_types[i % enemy_types.size()]
-			var enemy_name = enemy_names[i % enemy_names.size()]
-			var enemy = enemy_type.instantiate()
-			var angle = i * TAU / 4  # Distribuir en círculo
-			var radius = 8.0
-			enemy.global_position = Vector3(
-				sin(angle) * radius,
-				1,
-				cos(angle) * radius
-			)
-			add_child(enemy)
-			print("Enemigo ", enemy_name, " creado en posición circular")
+	_spawn_wave(BASE_WAVE_ENEMIES)
+	_wave_timer = Timer.new()
+	_wave_timer.wait_time = WAVE_INTERVAL_SEC
+	_wave_timer.one_shot = false
+	_wave_timer.timeout.connect(_on_wave_timer_timeout)
+	add_child(_wave_timer)
+	_wave_timer.start()
 
 
 func _add_player_health_ui() -> void:
@@ -216,6 +211,56 @@ func _add_experience_ui() -> void:
 	if EXPERIENCE_BAR_UI:
 		var exp_bar = EXPERIENCE_BAR_UI.instantiate()
 		add_child(exp_bar)
+
+
+func _on_wave_timer_timeout() -> void:
+	_cleanup_enemy_refs()
+	if _alive_enemies.size() >= MAX_ACTIVE_ENEMIES:
+		return
+	_wave_index += 1
+	var enemies_to_spawn := mini(BASE_WAVE_ENEMIES + _wave_index, MAX_ACTIVE_ENEMIES - _alive_enemies.size())
+	_spawn_wave(enemies_to_spawn)
+
+
+func _spawn_wave(count: int) -> void:
+	if count <= 0:
+		return
+	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
+	for i in range(count):
+		var scene: PackedScene = ENEMY_TYPES[randi() % ENEMY_TYPES.size()]
+		var enemy := scene.instantiate() as Node3D
+		var spawn_pos := _pick_spawn_position(i)
+		enemy.global_position = spawn_pos
+		add_child(enemy)
+		_alive_enemies.append(enemy)
+		if enemy.has_signal("enemy_died"):
+			enemy.enemy_died.connect(_on_enemy_died.bind(enemy))
+	_cleanup_enemy_refs()
+	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
+
+
+func _pick_spawn_position(index: int) -> Vector3:
+	if _enemy_spawns.size() > 0:
+		var marker := _enemy_spawns[index % _enemy_spawns.size()]
+		var jitter := Vector3(randf_range(-1.6, 1.6), 0.0, randf_range(-1.6, 1.6))
+		return marker.global_position + jitter
+	var angle := randf() * TAU
+	var radius := randf_range(6.0, 12.0)
+	return Vector3(cos(angle) * radius, 1.0, sin(angle) * radius)
+
+
+func _on_enemy_died(enemy: Node3D) -> void:
+	_alive_enemies.erase(enemy)
+	_cleanup_enemy_refs()
+	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
+
+
+func _cleanup_enemy_refs() -> void:
+	var keep: Array[Node3D] = []
+	for e in _alive_enemies:
+		if is_instance_valid(e):
+			keep.append(e)
+	_alive_enemies = keep
 
 
 func _connect_combat_feedback() -> void:
@@ -304,6 +349,14 @@ func _on_death_retry(layer: CanvasLayer) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	layer.queue_free()
 	_death_overlay = null
+	for e in _alive_enemies:
+		if is_instance_valid(e):
+			e.queue_free()
+	_alive_enemies.clear()
+	_wave_index = 0
+	_spawn_wave(BASE_WAVE_ENEMIES)
+	if is_instance_valid(_wave_timer):
+		_wave_timer.start()
 	var pc: Node = _player.get_node("PlayerCombat")
 	if pc.has_method("respawn_at"):
 		var xf := Transform3D(Basis.IDENTITY, Vector3(0.0, 2.5, 0.0))
