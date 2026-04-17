@@ -256,7 +256,7 @@ func _on_health_changed(current: float, max_hp: float) -> void:
 	var mesh := VisualMeshUtils.find_first_mesh_instance(self)
 	if mesh:
 		var health_percent = current / max_hp
-		var material := VisualMeshUtils.duplicate_surface0_as_override(mesh)
+		var material: StandardMaterial3D = VisualMeshUtils.duplicate_surface0_as_override(mesh)
 		if material:
 			if health_percent > 0.6:
 				material.albedo_color = Color(0.3, 0.1, 0.1)

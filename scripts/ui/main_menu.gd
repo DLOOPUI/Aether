@@ -2,6 +2,7 @@ extends Control
 
 const PROTOTYPE_SCENE := &"res://scenes/gameplay/prototype_playground.tscn"
 const SETTINGS_SCENE := &"res://scenes/ui/settings.tscn"
+const META_LOAD_SLOT := &"aether_load_slot"
 
 const _FORM_PREFIX := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Identidad/MarginId/Form/"
 const _BODY_SLIDERS_PATH := "SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot/Cuerpo/MarginBody/BodySliders"
@@ -15,7 +16,10 @@ var _body_sliders: Dictionary = {}
 @onready var _spacer: Control = $SafeArea/MainLayout/Spacer
 @onready var _left_column: VBoxContainer = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn
 
+@onready var _btn_continue: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnContinue
 @onready var _btn_play: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnPlay
+@onready var _btn_load: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnLoad
+@onready var _btn_wipe_save: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnWipeSave
 @onready var _btn_customize: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnCustomize
 @onready var _btn_settings: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnSettings
 @onready var _btn_quit: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage/BtnQuit
@@ -30,14 +34,19 @@ var _body_sliders: Dictionary = {}
 @onready var _btn_apply: Button = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/FooterRow/BtnApply
 @onready var _body_sliders_root: VBoxContainer = get_node(_BODY_SLIDERS_PATH)
 @onready var _tab_root: TabContainer = $SafeArea/MainLayout/LeftPanel/Margin/MainColumn/CharacterPage/LeftColumn/TabRoot
+@onready var _load_popup: PopupMenu = $LoadSlotPopup
 
 var _gamepad_hint: Label
+var _wipe_popup: PopupMenu
+var _wipe_confirm: ConfirmationDialog
+var _pending_wipe_slot: int = -1
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 	_wire_main_buttons()
+	_setup_wipe_slots_ui()
 	_wire_character_page()
 	_fill_character_options()
 	_build_body_sliders()
@@ -49,7 +58,11 @@ func _ready() -> void:
 	UiGamepadSupport.gamepads_changed.connect(_on_gamepads_changed)
 	_on_gamepads_changed(UiGamepadSupport.connected_joypads)
 	_show_main_page()
-	_btn_play.grab_focus()
+	_refresh_save_buttons()
+	if _btn_continue and _btn_continue.visible:
+		_btn_continue.grab_focus()
+	else:
+		_btn_play.grab_focus()
 
 
 func _setup_gamepad_hint() -> void:
@@ -171,7 +184,28 @@ func _safe_select(ob: OptionButton, idx: int) -> void:
 	ob.select(clampi(idx, 0, max_i))
 
 
+func _setup_wipe_slots_ui() -> void:
+	_wipe_popup = PopupMenu.new()
+	add_child(_wipe_popup)
+	_wipe_popup.id_pressed.connect(_on_wipe_slot_chosen)
+	_wipe_confirm = ConfirmationDialog.new()
+	_wipe_confirm.title = "Vaciar ranura"
+	_wipe_confirm.ok_button_text = "Vaciar"
+	_wipe_confirm.cancel_button_text = "Cancelar"
+	add_child(_wipe_confirm)
+	_wipe_confirm.confirmed.connect(_on_wipe_confirmed)
+	_wipe_confirm.canceled.connect(_on_wipe_canceled)
+
+
 func _wire_main_buttons() -> void:
+	if _btn_continue:
+		_btn_continue.pressed.connect(_on_continue_pressed)
+	if _btn_load:
+		_btn_load.pressed.connect(_on_load_menu_pressed)
+	if _btn_wipe_save:
+		_btn_wipe_save.pressed.connect(_on_wipe_menu_pressed)
+	if _load_popup:
+		_load_popup.id_pressed.connect(_on_load_slot_chosen)
 	_btn_play.pressed.connect(_on_play_pressed)
 	_btn_customize.pressed.connect(_on_customize_pressed)
 	_btn_settings.pressed.connect(_on_settings_pressed)
@@ -220,7 +254,29 @@ func _show_main_page() -> void:
 	_spacer.visible = true
 	_left_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_left_panel.custom_minimum_size = Vector2(400, 0)
-	_btn_play.grab_focus()
+	_refresh_save_buttons()
+	if _btn_continue and _btn_continue.visible:
+		_btn_continue.grab_focus()
+	else:
+		_btn_play.grab_focus()
+
+
+func _refresh_save_buttons() -> void:
+	var any: bool = SaveSlots.has_any_slot()
+	if _btn_continue:
+		_btn_continue.visible = any
+		_btn_continue.disabled = not any
+		if any:
+			var s: int = SaveSlots.get_most_recent_filled_slot()
+			if s >= 0:
+				_btn_continue.tooltip_text = SaveSlots.get_slot_summary(s)
+			else:
+				_btn_continue.tooltip_text = ""
+	if _btn_load:
+		_btn_load.disabled = not any
+	if _btn_wipe_save:
+		_btn_wipe_save.disabled = not any
+		_btn_wipe_save.tooltip_text = "Elimina los datos de una ranura del disco."
 
 
 func _on_customize_pressed() -> void:
@@ -232,7 +288,74 @@ func _on_customize_pressed() -> void:
 	_btn_back.grab_focus()
 
 
+func _on_continue_pressed() -> void:
+	var s: int = SaveSlots.get_most_recent_filled_slot()
+	if s < 0:
+		return
+	var r: Window = get_tree().root
+	r.set_meta(META_LOAD_SLOT, s)
+	get_tree().change_scene_to_file(PROTOTYPE_SCENE)
+
+
+func _on_load_menu_pressed() -> void:
+	if _load_popup == null or not SaveSlots.has_any_slot():
+		return
+	_load_popup.clear()
+	for i in range(SaveSlots.SLOT_COUNT):
+		_load_popup.add_item(SaveSlots.get_slot_summary(i), i)
+	var rect: Rect2 = _btn_load.get_global_rect()
+	_load_popup.position = rect.position + Vector2(0.0, rect.size.y + 4.0)
+	_load_popup.reset_size()
+	_load_popup.popup()
+
+
+func _on_load_slot_chosen(id: int) -> void:
+	if not SaveSlots.slot_has_data(id):
+		return
+	var r: Window = get_tree().root
+	r.set_meta(META_LOAD_SLOT, int(id))
+	get_tree().change_scene_to_file(PROTOTYPE_SCENE)
+
+
+func _on_wipe_menu_pressed() -> void:
+	if _wipe_popup == null or not SaveSlots.has_any_slot():
+		return
+	_wipe_popup.clear()
+	for i in range(SaveSlots.SLOT_COUNT):
+		var line: String = SaveSlots.get_slot_summary(i)
+		_wipe_popup.add_item("Vaciar — %s" % line, i)
+	var rect: Rect2 = _btn_wipe_save.get_global_rect()
+	_wipe_popup.position = rect.position + Vector2(0.0, rect.size.y + 4.0)
+	_wipe_popup.reset_size()
+	_wipe_popup.popup()
+
+
+func _on_wipe_slot_chosen(id: int) -> void:
+	if not SaveSlots.slot_has_data(id):
+		return
+	_pending_wipe_slot = int(id)
+	_wipe_confirm.dialog_text = (
+		"Se borrarán los datos de la ranura %d. ¿Continuar?" % (_pending_wipe_slot + 1)
+	)
+	_wipe_confirm.popup_centered()
+
+
+func _on_wipe_confirmed() -> void:
+	var s: int = _pending_wipe_slot
+	_pending_wipe_slot = -1
+	if s >= 0:
+		SaveSlots.clear_slot(s)
+	_refresh_save_buttons()
+
+
+func _on_wipe_canceled() -> void:
+	_pending_wipe_slot = -1
+
+
 func _on_play_pressed() -> void:
+	var r: Window = get_tree().root
+	if r.has_meta(META_LOAD_SLOT):
+		r.remove_meta(META_LOAD_SLOT)
 	get_tree().change_scene_to_file(PROTOTYPE_SCENE)
 
 

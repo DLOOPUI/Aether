@@ -30,6 +30,8 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main_menu")
 
+[node name="LoadSlotPopup" type="PopupMenu" parent="."]
+
 [node name="BackgroundBase" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -123,11 +125,30 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="BtnContinue" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Continuar"
+
 [node name="BtnPlay" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "Jugar"
+
+[node name="BtnLoad" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Cargar partida"
+
+[node name="BtnWipeSave" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Vaciar ranura…"
 
 [node name="BtnCustomize" type="Button" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn/MainPage"]
 layout_mode = 2

@@ -1,4 +1,5 @@
 extends CharacterBody3D
+class_name ThirdPersonPlayer
 
 @export var move_speed: float = 6.0
 @export var jump_velocity: float = 5.5
@@ -18,6 +19,8 @@ var _character_nodes: Array[Node3D] = []
 var _animation_players: Array[AnimationPlayer] = []
 var _has_embedded_heroes: bool = false
 var _was_sprinting: bool = false
+## Intro / cinemática: gravedad y slide activos; sin cámara, movimiento ni salto.
+var controls_locked: bool = false
 
 
 func _ready() -> void:
@@ -68,6 +71,8 @@ func take_damage(amount: float, source: Node = null) -> bool:
 
 
 func _input(event: InputEvent) -> void:
+	if controls_locked:
+		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		_pitch -= event.relative.y * mouse_sensitivity
@@ -83,6 +88,17 @@ func _wants_sprint() -> bool:
 
 func _physics_process(delta: float) -> void:
 	var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
+	if controls_locked:
+		if not is_on_floor():
+			if _has_embedded_heroes:
+				velocity.y += -gravity * 5.5 * delta
+			else:
+				velocity.y -= gravity * delta
+		velocity.x = move_toward(velocity.x, 0.0, move_speed * 2.0 * delta)
+		velocity.z = move_toward(velocity.z, 0.0, move_speed * 2.0 * delta)
+		move_and_slide()
+		return
+
 	if not is_on_floor():
 		if _has_embedded_heroes:
 			velocity.y += -gravity * 5.5 * delta

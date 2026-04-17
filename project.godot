@@ -20,6 +20,9 @@ run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+; Audio: GameSettings crea buses SFX y Music encadenados a Master (ver game_settings.gd).
+; Prototipo: jugador capa 2 / máscara 1, enemigos según escenas; oleadas en prototype_playground.gd.
+
 [autoload]
 
 UiGamepadSupport="*res://scripts/core/ui_gamepad_support.gd"

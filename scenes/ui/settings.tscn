@@ -121,6 +121,32 @@ max_value = 1.0
 step = 0.01
 value = 1.0
 
+[node name="LblSfx" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Volumen efectos (combate, UI)"
+
+[node name="SliderSfx" type="HSlider" parent="SafeArea/MainLayout/LeftPanel/Margin/Column"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="LblMusic" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Volumen música / ambiente"
+
+[node name="SliderMusic" type="HSlider" parent="SafeArea/MainLayout/LeftPanel/Margin/Column"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 0.65
+
 [node name="LblMouse" type="Label" parent="SafeArea/MainLayout/LeftPanel/Margin/Column"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)

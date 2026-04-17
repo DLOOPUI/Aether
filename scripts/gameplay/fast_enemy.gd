@@ -188,7 +188,7 @@ func _update_speed_visuals() -> void:
 		if _is_sprinting:
 			var mesh := VisualMeshUtils.find_first_mesh_instance(self)
 			if mesh:
-				var material := VisualMeshUtils.duplicate_surface0_as_override(mesh)
+				var material: StandardMaterial3D = VisualMeshUtils.duplicate_surface0_as_override(mesh)
 				if material:
 					material.albedo_color = Color(1.0, 1.0, 0.5)
 

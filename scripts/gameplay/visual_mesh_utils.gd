@@ -46,7 +46,7 @@ static func flash_mesh_albedo(root: Node, hit_color: Color, duration_sec: float)
 	)
 
 
-static func duplicate_surface0_as_override(mesh: MeshInstance3D):
+static func duplicate_surface0_as_override(mesh: MeshInstance3D) -> StandardMaterial3D:
 	if mesh == null or mesh.mesh == null or mesh.mesh.get_surface_count() < 1:
 		return null
 	var active := mesh.get_active_material(0)

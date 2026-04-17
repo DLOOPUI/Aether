@@ -126,14 +126,16 @@ func get_stats_summary() -> Dictionary:
 
 
 func _save_progress() -> void:
-	# Guardar en ConfigFile o sistema de guardado
-	var cf = ConfigFile.new()
+	var cf := ConfigFile.new()
 	cf.load("user://progress.cfg")
-	
 	cf.set_value("player", "level", current_level)
 	cf.set_value("player", "experience", current_experience)
-	
 	cf.save("user://progress.cfg")
+
+
+## Misma escritura que tras ganar XP; útil al guardar ranura o cargar partida.
+func persist_progress_file() -> void:
+	_save_progress()
 
 
 func load_progress() -> void:
@@ -148,6 +150,19 @@ func load_progress() -> void:
 	_update_stats()
 	
 	print("Progreso cargado: Nivel ", current_level, ", XP: ", current_experience)
+
+
+func apply_loaded_progress(level: int, experience: int) -> void:
+	current_level = maxi(1, level)
+	current_experience = maxi(0, experience)
+	_calculate_experience_to_next_level()
+	var guard := 0
+	while current_experience >= experience_to_next_level and guard < 256:
+		_level_up()
+		guard += 1
+	_update_stats()
+	persist_progress_file()
+	print("Progreso de partida: Nivel ", current_level, ", XP: ", current_experience)
 
 
 func reset() -> void:

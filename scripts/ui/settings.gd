@@ -8,6 +8,8 @@ var exit_to_parent: bool = false
 signal close_requested
 
 @onready var _slider_vol: HSlider = $SafeArea/MainLayout/LeftPanel/Margin/Column/SliderVol
+@onready var _slider_sfx: HSlider = $SafeArea/MainLayout/LeftPanel/Margin/Column/SliderSfx
+@onready var _slider_music: HSlider = $SafeArea/MainLayout/LeftPanel/Margin/Column/SliderMusic
 @onready var _slider_mouse: HSlider = $SafeArea/MainLayout/LeftPanel/Margin/Column/SliderMouse
 @onready var _chk_full: CheckBox = $SafeArea/MainLayout/LeftPanel/Margin/Column/ChkFullscreen
 @onready var _btn_back: Button = $SafeArea/MainLayout/LeftPanel/Margin/Column/BtnBack
@@ -21,11 +23,15 @@ func _ready() -> void:
 	if exit_to_parent:
 		_btn_back.text = "← Volver a la pausa"
 	_slider_vol.value_changed.connect(func(v: float) -> void: GameSettings.set_master_volume_linear(v))
+	_slider_sfx.value_changed.connect(func(v: float) -> void: GameSettings.set_sfx_volume_linear(v))
+	_slider_music.value_changed.connect(func(v: float) -> void: GameSettings.set_music_volume_linear(v))
 	_slider_mouse.value_changed.connect(func(v: float) -> void: GameSettings.set_mouse_sensitivity_multiplier(v))
 	_chk_full.toggled.connect(func(on: bool) -> void: GameSettings.set_fullscreen(on))
 	_btn_back.pressed.connect(_go_back)
 
 	_slider_vol.value = GameSettings.master_volume_linear
+	_slider_sfx.value = GameSettings.sfx_volume_linear
+	_slider_music.value = GameSettings.music_volume_linear
 	_slider_mouse.value = GameSettings.mouse_sensitivity_multiplier
 	_chk_full.button_pressed = GameSettings.fullscreen
 

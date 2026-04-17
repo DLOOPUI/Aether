@@ -8,12 +8,8 @@ static func play(parent: Node, stream: AudioStream, volume_db: float = 0.0) -> v
 		return
 	var p := AudioStreamPlayer.new()
 	p.stream = stream
-	var sfx_db := 0.0
-	var gs := parent.get_node_or_null("/root/GameSettings")
-	if gs and gs.has_method("get_sfx_volume_db"):
-		sfx_db = gs.get_sfx_volume_db()
-	p.volume_db = volume_db + sfx_db
-	p.bus = &"Master"
+	p.volume_db = volume_db
+	p.bus = &"SFX"
 	parent.add_child(p)
 	p.finished.connect(p.queue_free)
 	p.play()

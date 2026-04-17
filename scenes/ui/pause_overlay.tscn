@@ -57,7 +57,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.72, 0.88, 1)
 theme_override_font_sizes/font_size = 11
-text = "Esc reanuda · Opciones · Menú al título"
+text = "Esc pausa / reanuda · Guardar · Opciones · Menú al título"
 horizontal_alignment = 1
 
 [node name="BtnResume" type="Button" parent="Center/Panel/VBox"]
@@ -68,6 +68,10 @@ text = "Reanudar"
 [node name="BtnSettings" type="Button" parent="Center/Panel/VBox"]
 layout_mode = 2
 text = "Opciones"
+
+[node name="BtnSave" type="Button" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = "Guardar partida"
 
 [node name="BtnMenu" type="Button" parent="Center/Panel/VBox"]
 layout_mode = 2

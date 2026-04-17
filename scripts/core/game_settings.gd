@@ -7,6 +7,7 @@ const CFG_PATH := &"user://settings.cfg"
 
 var master_volume_linear: float = 1.0
 var sfx_volume_linear: float = 1.0
+var music_volume_linear: float = 0.65
 ## Multiplicador sobre la sensibilidad base del jugador (0.25 — 2.0).
 var mouse_sensitivity_multiplier: float = 1.0
 var fullscreen: bool = false
@@ -17,9 +18,23 @@ var player_inventory: Inventory = Inventory.new()
 
 
 func _ready() -> void:
+	_ensure_audio_buses()
 	load_settings()
 	apply_audio()
 	apply_display()
+
+
+func _ensure_audio_buses() -> void:
+	if AudioServer.get_bus_index(&"SFX") < 0:
+		AudioServer.add_bus()
+		var s: int = AudioServer.get_bus_count() - 1
+		AudioServer.set_bus_name(s, "SFX")
+		AudioServer.set_bus_send(s, &"Master")
+	if AudioServer.get_bus_index(&"Music") < 0:
+		AudioServer.add_bus()
+		var m: int = AudioServer.get_bus_count() - 1
+		AudioServer.set_bus_name(m, "Music")
+		AudioServer.set_bus_send(m, &"Master")
 
 
 func load_settings() -> void:
@@ -28,6 +43,7 @@ func load_settings() -> void:
 		return
 	master_volume_linear = float(cf.get_value(&"audio", &"master_linear", 1.0))
 	sfx_volume_linear = float(cf.get_value(&"audio", &"sfx_linear", 1.0))
+	music_volume_linear = float(cf.get_value(&"audio", &"music_linear", 0.65))
 	mouse_sensitivity_multiplier = float(cf.get_value(&"input", &"mouse_sensitivity_multiplier", 1.0))
 	fullscreen = bool(cf.get_value(&"display", &"fullscreen", false))
 	gold = int(cf.get_value(&"progress", &"gold", 0))
@@ -39,6 +55,7 @@ func save_settings() -> void:
 	cf.load(CFG_PATH)
 	cf.set_value(&"audio", &"master_linear", master_volume_linear)
 	cf.set_value(&"audio", &"sfx_linear", sfx_volume_linear)
+	cf.set_value(&"audio", &"music_linear", music_volume_linear)
 	cf.set_value(&"input", &"mouse_sensitivity_multiplier", mouse_sensitivity_multiplier)
 	cf.set_value(&"display", &"fullscreen", fullscreen)
 	cf.set_value(&"progress", &"gold", gold)
@@ -60,6 +77,13 @@ func set_master_volume_linear(v: float) -> void:
 
 func set_sfx_volume_linear(v: float) -> void:
 	sfx_volume_linear = clampf(v, 0.0, 1.0)
+	apply_audio()
+	save_settings()
+
+
+func set_music_volume_linear(v: float) -> void:
+	music_volume_linear = clampf(v, 0.0, 1.0)
+	apply_audio()
 	save_settings()
 
 
@@ -81,12 +105,27 @@ func set_fullscreen(on: bool) -> void:
 
 
 func apply_audio() -> void:
-	var bus := AudioServer.get_bus_index(&"Master")
+	_ensure_audio_buses()
+	var master := AudioServer.get_bus_index(&"Master")
 	if master_volume_linear <= 0.0001:
-		AudioServer.set_bus_mute(bus, true)
+		AudioServer.set_bus_mute(master, true)
 	else:
-		AudioServer.set_bus_mute(bus, false)
-		AudioServer.set_bus_volume_db(bus, linear_to_db(master_volume_linear))
+		AudioServer.set_bus_mute(master, false)
+		AudioServer.set_bus_volume_db(master, linear_to_db(master_volume_linear))
+	var sfx := AudioServer.get_bus_index(&"SFX")
+	if sfx >= 0:
+		if sfx_volume_linear <= 0.0001:
+			AudioServer.set_bus_mute(sfx, true)
+		else:
+			AudioServer.set_bus_mute(sfx, false)
+			AudioServer.set_bus_volume_db(sfx, linear_to_db(sfx_volume_linear))
+	var music := AudioServer.get_bus_index(&"Music")
+	if music >= 0:
+		if music_volume_linear <= 0.0001:
+			AudioServer.set_bus_mute(music, true)
+		else:
+			AudioServer.set_bus_mute(music, false)
+			AudioServer.set_bus_volume_db(music, linear_to_db(music_volume_linear))
 
 
 func apply_display() -> void:

@@ -1,4 +1,5 @@
 extends Node3D
+## Oleadas y refuerzos: MAX_ACTIVE_ENEMIES evita spam de instancias; un pool de enemigos podría sustituir instanciar/liberar más adelante.
 
 const MAIN_MENU := &"res://scenes/ui/main_menu.tscn"
 const SETTINGS_SCENE: PackedScene = preload("res://scenes/ui/settings.tscn")
@@ -12,12 +13,17 @@ const ENEMY_SCENE_PATHS: PackedStringArray = [
 ]
 const HUD_MMO: PackedScene = preload("res://scenes/ui/hud_mmo.tscn")
 const EXPERIENCE_SYSTEM := preload("res://scripts/core/experience_system.gd")
+const META_LOAD_SLOT := &"aether_load_slot"
+const INTRO_SPAWN_EXTRA_Y := 42.0
+const SFX_IMPACT := preload("res://assets/audio/hit.wav")
 
 const BASE_WAVE_ENEMIES := 4
 const MAX_ACTIVE_ENEMIES := 12
 const WAVE_INTERVAL_SEC := 12.0
+const WAVE_TELEGRAPH_SEC := 3.0
 const ENEMY_HEALTH_GROWTH_PER_WAVE := 0.12
 const ENEMY_DAMAGE_GROWTH_PER_WAVE := 0.08
+const AMBIENT_MUSIC_PATH := "res://assets/audio/ambient_loop.ogg"
 
 @onready var _pause: CanvasLayer = $PauseOverlay
 @onready var _npc: Node3D = $NpcPlaza
@@ -40,9 +46,22 @@ var _kills: int = 0
 var _best_wave_reached: int = 1
 var _enemy_scenes: Array[PackedScene] = []
 var _stats_refresh_timer: float = 0.0
+var _load_slot: int = -1
+var _pending_load: Dictionary = {}
+var _spawn_extra_y: float = 0.0
+var _intro_fall_active: bool = false
+var _intro_was_airborne: bool = false
+var _toast_layer: CanvasLayer = null
+var _edge_left: ColorRect
+var _edge_right: ColorRect
+var _edge_top: ColorRect
+var _edge_bottom: ColorRect
+var _saturation_toast_cd: float = 0.0
+var _wave_color_default: Color = Color(0.92, 0.96, 1.0)
 
 
 func _ready() -> void:
+	_consume_session_boot()
 	_setup_inputs()
 	_load_enemy_scenes()
 	# HUD 2D bajo un CanvasLayer (no colgar Control directamente del Node3D: ocupa mal el viewport).
@@ -57,18 +76,213 @@ func _ready() -> void:
 	_hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hit_flash.color = Color(0.9, 0.12, 0.12, 0.0)
 	_vfx_layer.add_child(_hit_flash)
+	_setup_directional_damage_edges()
+	_toast_layer = CanvasLayer.new()
+	_toast_layer.layer = 100
+	_toast_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_toast_layer)
 	_setup_player()
 	_hud_mmo = HUD_MMO.instantiate() as HudMmo
 	_hud_layer.add_child(_hud_mmo)
 	_wave_label = _hud_mmo.wave_label
 	_stats_label = _hud_mmo.stats_label
 	_hud_mmo.set_resource_bar_mana_mode(false)
-	_setup_enemies()
+	if _intro_fall_active:
+		_wave_label.text = "Aterriza para comenzar"
+	if not _intro_fall_active:
+		_setup_enemies()
+	_try_start_ambient_music()
 	_connect_combat_feedback()
 	_pause.hide_pause()
 	_pause.resume_pressed.connect(_on_pause_resume)
 	_pause.main_menu_pressed.connect(_on_pause_main_menu)
 	_pause.settings_pressed.connect(_on_pause_settings)
+	_pause.save_slot_pressed.connect(_on_pause_save_slot)
+
+
+func _physics_process(_delta: float) -> void:
+	if not _intro_fall_active or not is_instance_valid(_player):
+		return
+	var body := _player as CharacterBody3D
+	if body == null:
+		return
+	if not body.is_on_floor():
+		_intro_was_airborne = true
+	elif _intro_was_airborne:
+		_finish_intro_land()
+
+
+func _finish_intro_land() -> void:
+	if not _intro_fall_active:
+		return
+	_intro_fall_active = false
+	SaveSlots.mark_intro_fall_complete()
+	var tp := _player as ThirdPersonPlayer
+	if tp:
+		tp.controls_locked = false
+	if is_instance_valid(_hit_flash):
+		_hit_flash.color = Color(0.45, 0.48, 0.55, 0.38)
+		var t := create_tween()
+		t.tween_property(_hit_flash, "color:a", 0.0, 0.4)
+	_play_intro_impact_fx()
+	_setup_enemies()
+
+
+func _play_intro_impact_fx() -> void:
+	if is_instance_valid(_player):
+		var arm := _player.get_node_or_null("SpringArm3D") as SpringArm3D
+		if arm:
+			var base: Vector3 = arm.rotation
+			var tw := create_tween()
+			tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tw.tween_property(arm, "rotation", base + Vector3(0.1, 0.06, 0.0), 0.05)
+			tw.tween_property(arm, "rotation", base + Vector3(-0.06, -0.05, 0.02), 0.06)
+			tw.tween_property(arm, "rotation", base, 0.22)
+	CombatSfx.play(self, SFX_IMPACT, -8.0)
+
+
+func _show_game_toast(message: String) -> void:
+	if _toast_layer == null:
+		return
+	for c in _toast_layer.get_children():
+		c.queue_free()
+	var lab := Label.new()
+	lab.text = message
+	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lab.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	lab.offset_top = 52.0
+	lab.offset_bottom = 92.0
+	lab.add_theme_font_size_override(&"font_size", 17)
+	lab.add_theme_color_override(&"font_color", Color(0.62, 0.96, 0.82))
+	lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_toast_layer.add_child(lab)
+	var host := Node.new()
+	host.process_mode = Node.PROCESS_MODE_ALWAYS
+	_toast_layer.add_child(host)
+	var tw := host.create_tween()
+	tw.tween_interval(1.85)
+	tw.tween_property(lab, "modulate:a", 0.0, 0.4)
+	tw.finished.connect(func() -> void: lab.queue_free(); host.queue_free())
+
+
+func _on_pause_save_slot(slot: int) -> void:
+	if slot < 0 or slot >= SaveSlots.SLOT_COUNT:
+		return
+	if not is_instance_valid(_player):
+		return
+	var es: ExperienceSystem = _player.get_node_or_null("ExperienceSystem") as ExperienceSystem
+	var lvl: int = es.current_level if es else 1
+	var xp: int = es.current_experience if es else 0
+	var err: Error = SaveSlots.save_run(
+		slot,
+		_wave_index,
+		_kills,
+		int(floor(_run_time_sec)),
+		_best_wave_reached,
+		lvl,
+		xp
+	)
+	if err == OK:
+		if es:
+			es.persist_progress_file()
+		_show_game_toast("Partida guardada · Ranura %d" % (slot + 1))
+	else:
+		_show_game_toast("No se pudo guardar la partida.")
+
+
+func _try_start_ambient_music() -> void:
+	if not ResourceLoader.exists(AMBIENT_MUSIC_PATH):
+		return
+	var stream: AudioStream = load(AMBIENT_MUSIC_PATH) as AudioStream
+	if stream == null:
+		return
+	if stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+	elif stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	var ap := AudioStreamPlayer.new()
+	ap.name = "AmbientMusic"
+	ap.bus = &"Music"
+	ap.stream = stream
+	ap.volume_db = -10.0
+	ap.process_mode = Node.PROCESS_MODE_ALWAYS
+	ap.autoplay = true
+	add_child(ap)
+
+
+func _setup_directional_damage_edges() -> void:
+	_edge_left = _make_edge_rect()
+	_edge_left.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	_edge_left.offset_right = 96.0
+	_vfx_layer.add_child(_edge_left)
+	_edge_right = _make_edge_rect()
+	_edge_right.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	_edge_right.offset_left = -96.0
+	_vfx_layer.add_child(_edge_right)
+	_edge_top = _make_edge_rect()
+	_edge_top.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_edge_top.offset_bottom = 72.0
+	_vfx_layer.add_child(_edge_top)
+	_edge_bottom = _make_edge_rect()
+	_edge_bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_edge_bottom.offset_top = -72.0
+	_vfx_layer.add_child(_edge_bottom)
+
+
+func _make_edge_rect() -> ColorRect:
+	var r := ColorRect.new()
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.color = Color(1.0, 0.12, 0.1, 0.0)
+	return r
+
+
+func _flash_directional_hit(source: Node, amount: float) -> void:
+	var cam := get_viewport().get_camera_3d()
+	if cam == null or not is_instance_valid(_player) or not is_instance_valid(source):
+		_flash_uniform_hit_flash(amount)
+		return
+	if not (source is Node3D):
+		_flash_uniform_hit_flash(amount)
+		return
+	var to_src: Vector3 = (source as Node3D).global_position - _player.global_position
+	to_src.y = 0.0
+	if to_src.length_squared() < 0.0001:
+		_flash_uniform_hit_flash(amount)
+		return
+	to_src = to_src.normalized()
+	var right: Vector3 = cam.global_transform.basis.x
+	var fwd: Vector3 = -cam.global_transform.basis.z
+	right.y = 0.0
+	fwd.y = 0.0
+	if right.length_squared() > 0.0001:
+		right = right.normalized()
+	if fwd.length_squared() > 0.0001:
+		fwd = fwd.normalized()
+	var lr: float = to_src.dot(right)
+	var fb: float = to_src.dot(fwd)
+	var edge: ColorRect = _edge_right
+	if absf(lr) >= absf(fb):
+		edge = _edge_left if lr < 0.0 else _edge_right
+	else:
+		edge = _edge_top if fb < 0.0 else _edge_bottom
+	var a: float = clampf(amount / 45.0, 0.12, 0.42)
+	_pulse_edge(edge, a)
+
+
+func _pulse_edge(edge: ColorRect, alpha_max: float) -> void:
+	if edge == null:
+		return
+	edge.color.a = alpha_max
+	var tw := create_tween()
+	tw.tween_property(edge, "color:a", 0.0, 0.38).set_ease(Tween.EASE_OUT)
+
+
+func _flash_uniform_hit_flash(amount: float) -> void:
+	if not is_instance_valid(_hit_flash):
+		return
+	_hit_flash.color = Color(0.92, 0.15, 0.12, clampf(amount / 55.0, 0.12, 0.28))
+	var t := create_tween()
+	t.tween_property(_hit_flash, "color:a", 0.0, 0.22)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -79,6 +293,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if DialogueManager.is_dialogue_active():
 		return
 	if get_tree().paused:
+		return
+	if _intro_fall_active:
+		if event.is_action_pressed(&"ui_cancel"):
+			_open_pause()
+			get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E:
 		if _npc is InteractableNpc and (_npc as InteractableNpc).try_interact(_player.global_position):
@@ -186,17 +405,54 @@ func _load_enemy_scenes() -> void:
 			push_error("prototype_playground: no se pudo cargar escena: %s" % path)
 
 
+func _consume_session_boot() -> void:
+	_load_slot = -1
+	_pending_load = {}
+	_spawn_extra_y = 0.0
+	_intro_fall_active = false
+	_intro_was_airborne = false
+
+	var root: Window = get_tree().root
+	if root.has_meta(META_LOAD_SLOT):
+		_load_slot = int(root.get_meta(META_LOAD_SLOT, -1))
+		root.remove_meta(META_LOAD_SLOT)
+
+	if _load_slot >= 0 and SaveSlots.slot_has_data(_load_slot):
+		_pending_load = SaveSlots.load_run_into_session(_load_slot)
+		_wave_index = int(_pending_load.get("wave_index", 0))
+		_kills = int(_pending_load.get("kills", 0))
+		_run_time_sec = float(int(_pending_load.get("play_time_sec", 0)))
+		_best_wave_reached = maxi(1, int(_pending_load.get("best_wave", 1)))
+		return
+
+	if not SaveSlots.is_intro_fall_complete():
+		_intro_fall_active = true
+		_intro_was_airborne = false
+		_spawn_extra_y = INTRO_SPAWN_EXTRA_Y
+
+
 func _setup_player() -> void:
 	_player = PLAYER_WITH_COMBAT.instantiate()
 	var spawn_xf := Transform3D(Basis.IDENTITY, Vector3(0.0, 2.5, 0.0))
 	if is_instance_valid(_player_spawn):
 		spawn_xf = _player_spawn.global_transform
+	spawn_xf.origin.y += _spawn_extra_y
 	_player.global_transform = spawn_xf
 	add_child(_player)
 	_player.add_to_group("player")
-	
-	# Añadir sistema de experiencia al jugador
+
 	_add_experience_system()
+	if bool(_pending_load.get("ok", false)):
+		var es: ExperienceSystem = _player.get_node_or_null("ExperienceSystem") as ExperienceSystem
+		if es:
+			es.apply_loaded_progress(
+				int(_pending_load.get("level", 1)),
+				int(_pending_load.get("experience", 0)))
+
+	if _intro_fall_active:
+		var tp := _player as ThirdPersonPlayer
+		if tp:
+			tp.controls_locked = true
 	
 func _setup_enemies() -> void:
 	# Encontrar todos los Marker3D para spawn de enemigos
@@ -223,6 +479,9 @@ func _add_experience_system() -> void:
 func _on_wave_timer_timeout() -> void:
 	_cleanup_enemy_refs()
 	if _alive_enemies.size() >= MAX_ACTIVE_ENEMIES:
+		if _saturation_toast_cd <= 0.0:
+			_show_game_toast("Zona saturada: derrota enemigos para recibir refuerzos.")
+			_saturation_toast_cd = 10.0
 		return
 	_wave_index += 1
 	var enemies_to_spawn := mini(BASE_WAVE_ENEMIES + _wave_index, MAX_ACTIVE_ENEMIES - _alive_enemies.size())
@@ -232,7 +491,6 @@ func _on_wave_timer_timeout() -> void:
 func _spawn_wave(count: int) -> void:
 	if count <= 0 or _enemy_scenes.is_empty():
 		return
-	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
 	for i in range(count):
 		var scene: PackedScene = _enemy_scenes[randi() % _enemy_scenes.size()]
 		var enemy := scene.instantiate() as Node3D
@@ -243,7 +501,27 @@ func _spawn_wave(count: int) -> void:
 		if enemy.has_signal("enemy_died"):
 			enemy.enemy_died.connect(_on_enemy_died.bind(enemy))
 	_cleanup_enemy_refs()
-	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
+	_refresh_wave_hud()
+
+
+func _refresh_wave_hud() -> void:
+	if not is_instance_valid(_wave_label):
+		return
+	if _intro_fall_active:
+		return
+	_wave_label.modulate = _wave_color_default
+	var wave_num: int = _wave_index + 1
+	var active: int = _alive_enemies.size()
+	var line: String = "Oleada %d   Enemigos activos: %d" % [wave_num, active]
+	if active >= MAX_ACTIVE_ENEMIES:
+		line += "   · ¡Saturado!"
+	if is_instance_valid(_wave_timer) and not _wave_timer.is_stopped():
+		var tl: float = _wave_timer.time_left
+		if tl > 0.05:
+			line += "   · Refuerzos ~%ds" % int(ceil(tl))
+			if tl <= WAVE_TELEGRAPH_SEC:
+				_wave_label.modulate = Color(1.0, 0.92, 0.55)
+	_wave_label.text = line
 
 
 func _pick_spawn_position(index: int) -> Vector3:
@@ -260,7 +538,7 @@ func _on_enemy_died(enemy: Node3D) -> void:
 	_alive_enemies.erase(enemy)
 	_kills += 1
 	_cleanup_enemy_refs()
-	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
+	_refresh_wave_hud()
 
 
 func _cleanup_enemy_refs() -> void:
@@ -284,7 +562,11 @@ func _apply_wave_scaling(enemy: Node3D, wave: int) -> void:
 
 
 func _process(delta: float) -> void:
-	_run_time_sec += delta
+	if not _intro_fall_active:
+		_run_time_sec += delta
+	if _saturation_toast_cd > 0.0:
+		_saturation_toast_cd = maxf(0.0, _saturation_toast_cd - delta)
+	_refresh_wave_hud()
 	_best_wave_reached = maxi(_best_wave_reached, _wave_index + 1)
 	if not _stats_label.visible and (_run_time_sec >= 5.0 or _kills > 0):
 		_stats_label.visible = true
@@ -321,12 +603,15 @@ func _on_pc_enemy_hit(enemy: Node, damage: float) -> void:
 		_spawn_damage_popup((enemy as Node3D).global_position + Vector3(0.0, 0.9, 0.0), damage, Color(1.0, 0.92, 0.35), false)
 
 
-func _on_pc_player_hit(amount: float) -> void:
+func _on_pc_player_hit(amount: float, source: Node = null) -> void:
 	_spawn_damage_popup(_player.global_position + Vector3(0.0, 1.2, 0.0), amount, Color(1.0, 0.38, 0.38), true)
-	if is_instance_valid(_hit_flash):
-		_hit_flash.color.a = 0.22
-		var t := create_tween()
-		t.tween_property(_hit_flash, "color:a", 0.0, 0.2)
+	if source != null and is_instance_valid(source):
+		_flash_directional_hit(source, amount)
+	else:
+		if is_instance_valid(_hit_flash):
+			_hit_flash.color.a = 0.22
+			var t := create_tween()
+			t.tween_property(_hit_flash, "color:a", 0.0, 0.2)
 
 
 func _spawn_damage_popup(world_pos: Vector3, amount: float, color: Color, is_player: bool) -> void:
@@ -377,6 +662,23 @@ func _create_death_overlay() -> CanvasLayer:
 	title.text = "Has caído"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
+	var et: int = int(floor(_run_time_sec))
+	var mins: int = int(floor(float(et) / 60.0))
+	var secs: int = et % 60
+	var summary := Label.new()
+	summary.text = "Oleada %d · Tiempo %02d:%02d · Kills %d" % [_wave_index + 1, mins, secs, _kills]
+	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	summary.add_theme_color_override(&"font_color", Color(0.72, 0.82, 0.94))
+	summary.add_theme_font_size_override(&"font_size", 13)
+	vbox.add_child(summary)
+	var hint := Label.new()
+	hint.text = "Reintentar: oleada y estadísticas vuelven al inicio (tu nivel se mantiene)."
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size = Vector2(300, 0)
+	hint.add_theme_color_override(&"font_color", Color(0.55, 0.62, 0.72))
+	hint.add_theme_font_size_override(&"font_size", 11)
+	vbox.add_child(hint)
 	var btn_retry := Button.new()
 	btn_retry.text = "Reintentar"
 	btn_retry.pressed.connect(_on_death_retry.bind(layer))

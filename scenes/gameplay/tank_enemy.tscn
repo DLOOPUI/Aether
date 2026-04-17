@@ -18,9 +18,11 @@ detection_range = 10.0
 defense = 10.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
 shape = SubResource("BoxShape3D_collision")
 
 [node name="Visual" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
 
 [node name="Guerrero" parent="Visual" instance=ExtResource("3_model")]
 

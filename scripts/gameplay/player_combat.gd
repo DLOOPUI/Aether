@@ -10,7 +10,7 @@ signal attack_triggered
 signal enemy_hit(enemy: Node, damage: float)
 signal enemy_killed(enemy: Node, experience_gained: int)
 signal player_died
-signal player_took_damage(amount: float)
+signal player_took_damage(amount: float, source: Node)
 
 @export var base_attack_damage: float = 20.0
 @export var attack_range: float = 2.5
@@ -41,7 +41,10 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _attack_timer > 0.0:
 		_attack_timer -= delta
-	
+
+	if _player is ThirdPersonPlayer and (_player as ThirdPersonPlayer).controls_locked:
+		return
+
 	# Detectar input de ataque
 	if Input.is_action_just_pressed("attack") and _attack_timer <= 0.0 and _health_system.is_alive():
 		_perform_attack()
@@ -171,9 +174,10 @@ func _on_player_death() -> void:
 	_player.set_physics_process(false)
 
 
-func _on_health_damage_taken(amount: float, _source: Node) -> void:
-	CombatSfx.play(self, SFX_HURT, -1.0)
-	player_took_damage.emit(amount)
+func _on_health_damage_taken(amount: float, source: Node) -> void:
+	var vol: float = -1.0 if amount >= 18.0 else -5.0
+	CombatSfx.play(self, SFX_HURT, vol)
+	player_took_damage.emit(amount, source)
 
 
 # API para UI/otros sistemas
