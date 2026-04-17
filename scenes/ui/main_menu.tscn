@@ -151,7 +151,6 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="CharacterPage" type="VBoxContainer" parent="SafeArea/MainLayout/LeftPanel/Margin/MainColumn" unique_id=1753409004]
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12

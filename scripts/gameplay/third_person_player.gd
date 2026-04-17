@@ -29,7 +29,7 @@ var _pitch: float = deg_to_rad(-12.0)
 	$roguehooded_player
 ]
 
-@onready var my = 0
+@onready var my = 2
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -98,7 +98,6 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("movement"):
 		
 		var nodo = animations[my]
-		
 		nodo.play("Running_B", 0.3)
 	
 	if not Input.is_anything_pressed():
