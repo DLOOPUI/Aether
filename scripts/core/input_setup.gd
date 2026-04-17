@@ -75,6 +75,6 @@ func _create_mouse_button_event(button: int) -> InputEventMouseButton:
 
 func _create_joypad_button_event(button: int) -> InputEventJoypadButton:
 	var event = InputEventJoypadButton.new()
-	event.button_index = JoyButton(button)
+	event.button_index = button as JoyButton
 	event.device = -1  # Todos los dispositivos
 	return event

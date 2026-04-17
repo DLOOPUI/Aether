@@ -8,15 +8,17 @@ signal damage_taken(amount: float, source: Node)
 
 @export var max_health: float = 100.0
 
+var _current_health: float = 100.0
+
 @export var current_health: float = 100.0:
 	get:
-		return field
+		return _current_health
 	set(value):
-		var old := field
-		field = clampf(value, 0.0, max_health)
-		if not is_equal_approx(old, field):
-			health_changed.emit(field, max_health)
-			if field <= 0.0:
+		var old: float = _current_health
+		_current_health = clampf(value, 0.0, max_health)
+		if not is_equal_approx(old, _current_health):
+			health_changed.emit(_current_health, max_health)
+			if _current_health <= 0.0:
 				health_depleted.emit()
 
 var is_invulnerable: bool = false
