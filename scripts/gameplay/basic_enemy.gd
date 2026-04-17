@@ -9,6 +9,8 @@ const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
 @export var attack_range: float = 1.5
 @export var attack_cooldown: float = 1.5
 @export var detection_range: float = 8.0
+@export var separation_radius: float = 1.8
+@export var separation_strength: float = 2.5
 @export var drop_table: Array[Dictionary] = [
 	{"item_id": "health_potion", "chance": 0.3, "min_amount": 1, "max_amount": 1},
 	{"item_id": "gold_coin", "chance": 0.8, "min_amount": 1, "max_amount": 5},
@@ -85,8 +87,8 @@ func _update_movement(delta: float) -> void:
 	# Moverse hacia el jugador
 	var direction = (_target.global_position - global_position).normalized()
 	direction.y = 0  # Mantener en el plano horizontal
-	
-	velocity = direction * move_speed
+	var separation = _get_separation_force()
+	velocity = (direction + separation).normalized() * move_speed
 	
 	# Rotar hacia el jugador
 	if direction.length_squared() > 0.001:
@@ -99,6 +101,20 @@ func _update_movement(delta: float) -> void:
 	var distance = global_position.distance_to(_target.global_position)
 	if distance <= attack_range and _attack_timer <= 0.0:
 		_attack_target()
+
+
+func _get_separation_force() -> Vector3:
+	var force := Vector3.ZERO
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if e == self or not (e is Node3D):
+			continue
+		var d := global_position.distance_to((e as Node3D).global_position)
+		if d > 0.001 and d < separation_radius:
+			var away := (global_position - (e as Node3D).global_position).normalized()
+			force += away * ((separation_radius - d) / separation_radius)
+	if force.length_squared() > 0.0001:
+		force = force.normalized() * separation_strength
+	return force
 
 
 func _attack_target() -> void:

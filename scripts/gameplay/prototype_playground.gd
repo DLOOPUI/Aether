@@ -15,6 +15,8 @@ const ENEMY_TYPES := [BASIC_ENEMY, RANGED_ENEMY, TANK_ENEMY, FAST_ENEMY]
 const BASE_WAVE_ENEMIES := 4
 const MAX_ACTIVE_ENEMIES := 12
 const WAVE_INTERVAL_SEC := 12.0
+const ENEMY_HEALTH_GROWTH_PER_WAVE := 0.12
+const ENEMY_DAMAGE_GROWTH_PER_WAVE := 0.08
 
 @onready var _pause: CanvasLayer = $PauseOverlay
 @onready var _npc: Node3D = $NpcPlaza
@@ -29,6 +31,10 @@ var _wave_timer: Timer = null
 var _wave_index: int = 0
 var _alive_enemies: Array[Node3D] = []
 var _wave_label: Label = null
+var _stats_label: Label = null
+var _run_time_sec: float = 0.0
+var _kills: int = 0
+var _best_wave_reached: int = 1
 
 
 func _ready() -> void:
@@ -47,6 +53,11 @@ func _ready() -> void:
 	_wave_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	_wave_label.text = "Oleada 1"
 	_vfx_layer.add_child(_wave_label)
+	_stats_label = Label.new()
+	_stats_label.position = Vector2(18, 38)
+	_stats_label.add_theme_font_size_override("font_size", 16)
+	_stats_label.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+	_vfx_layer.add_child(_stats_label)
 	_setup_player()
 	_setup_enemies()
 	_connect_combat_feedback()
@@ -231,6 +242,7 @@ func _spawn_wave(count: int) -> void:
 		var enemy := scene.instantiate() as Node3D
 		var spawn_pos := _pick_spawn_position(i)
 		enemy.global_position = spawn_pos
+		_apply_wave_scaling(enemy, _wave_index)
 		add_child(enemy)
 		_alive_enemies.append(enemy)
 		if enemy.has_signal("enemy_died"):
@@ -251,6 +263,7 @@ func _pick_spawn_position(index: int) -> Vector3:
 
 func _on_enemy_died(enemy: Node3D) -> void:
 	_alive_enemies.erase(enemy)
+	_kills += 1
 	_cleanup_enemy_refs()
 	_wave_label.text = "Oleada %d   Enemigos activos: %d" % [_wave_index + 1, _alive_enemies.size()]
 
@@ -261,6 +274,26 @@ func _cleanup_enemy_refs() -> void:
 		if is_instance_valid(e):
 			keep.append(e)
 	_alive_enemies = keep
+
+
+func _apply_wave_scaling(enemy: Node3D, wave: int) -> void:
+	if wave <= 0:
+		return
+	var health_mult := 1.0 + ENEMY_HEALTH_GROWTH_PER_WAVE * float(wave)
+	var dmg_mult := 1.0 + ENEMY_DAMAGE_GROWTH_PER_WAVE * float(wave)
+	if enemy.has_method("set"):
+		if enemy.get("max_health") != null:
+			enemy.set("max_health", float(enemy.get("max_health")) * health_mult)
+		if enemy.get("attack_damage") != null:
+			enemy.set("attack_damage", float(enemy.get("attack_damage")) * dmg_mult)
+
+
+func _process(delta: float) -> void:
+	_run_time_sec += delta
+	var mins := int(_run_time_sec) / 60
+	var secs := int(_run_time_sec) % 60
+	_best_wave_reached = maxi(_best_wave_reached, _wave_index + 1)
+	_stats_label.text = "Tiempo %02d:%02d   Kills %d   Mejor oleada %d" % [mins, secs, _kills, _best_wave_reached]
 
 
 func _connect_combat_feedback() -> void:
@@ -354,6 +387,9 @@ func _on_death_retry(layer: CanvasLayer) -> void:
 			e.queue_free()
 	_alive_enemies.clear()
 	_wave_index = 0
+	_run_time_sec = 0.0
+	_kills = 0
+	_best_wave_reached = 1
 	_spawn_wave(BASE_WAVE_ENEMIES)
 	if is_instance_valid(_wave_timer):
 		_wave_timer.start()

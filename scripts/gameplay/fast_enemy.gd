@@ -11,6 +11,8 @@ const COMBAT_BALANCE_PATH := "res://resources/combat_balance.tres"
 @export var attack_cooldown: float = 0.5
 @export var detection_range: float = 12.0
 @export var evasion_chance: float = 0.3  # 30% chance de esquivar ataques
+@export var separation_radius: float = 1.6
+@export var separation_strength: float = 3.0
 
 @export var drop_table: Array[Dictionary] = [
 	{"item_id": "gold_coin", "chance": 0.7, "min_amount": 1, "max_amount": 3},
@@ -148,7 +150,7 @@ func _update_movement(delta: float) -> void:
 			else:
 				movement = direction * current_speed
 	
-	velocity = movement
+	velocity = movement + _get_separation_force()
 	
 	# Rotar rápidamente hacia la dirección de movimiento
 	if velocity.length_squared() > 0.001:
@@ -159,6 +161,20 @@ func _update_movement(delta: float) -> void:
 	
 	# Efecto visual de velocidad
 	_update_speed_visuals()
+
+
+func _get_separation_force() -> Vector3:
+	var force := Vector3.ZERO
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if e == self or not (e is Node3D):
+			continue
+		var d := global_position.distance_to((e as Node3D).global_position)
+		if d > 0.001 and d < separation_radius:
+			var away := (global_position - (e as Node3D).global_position).normalized()
+			force += away * ((separation_radius - d) / separation_radius)
+	if force.length_squared() > 0.0001:
+		force = force.normalized() * separation_strength
+	return force
 
 
 func _update_speed_visuals() -> void:
