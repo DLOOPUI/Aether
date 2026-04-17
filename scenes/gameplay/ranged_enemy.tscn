@@ -1,0 +1,39 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/ranged_enemy.gd" id="1_ranged"]
+[ext_resource type="Script" path="res://scripts/core/health_system.gd" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_collision"]
+size = Vector3(0.8, 1.8, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.8, 1.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blue"]
+albedo_color = Color(0.2, 0.2, 0.8)
+
+[node name="RangedEnemy" type="CharacterBody3D"]
+script = ExtResource("1_ranged")
+max_health = 40.0
+move_speed = 2.5
+attack_damage = 15.0
+attack_range = 10.0
+min_range = 5.0
+attack_cooldown = 2.0
+detection_range = 12.0
+projectile_speed = 15.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_collision")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+material_override = SubResource("StandardMaterial3D_blue")
+
+[node name="HealthSystem" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 40.0
+current_health = 40.0
+
+[node name="ProjectileSpawn" type="Node3D" parent="."]
+position = Vector3(0, 1.5, 0)

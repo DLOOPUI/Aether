@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://yyn2mihr57aq"
+path="res://.godot/imported/Rock_3_C_Color1.obj-38a5858aa73acea5256d21fb0b8726cd.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Rock_3_C_Color1.obj-38a5858aa73acea5256d21fb0b8726cd.mesh"]
+
+source_file="res://assets/models/obj/assets tiles/Rock_3_C_Color1.obj"
+dest_files=["res://.godot/imported/Rock_3_C_Color1.obj-38a5858aa73acea5256d21fb0b8726cd.mesh", "res://.godot/imported/Rock_3_C_Color1.obj-38a5858aa73acea5256d21fb0b8726cd.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

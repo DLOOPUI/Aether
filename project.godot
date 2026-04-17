@@ -32,3 +32,7 @@ DialogueManager="*res://scripts/core/dialogue_manager.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+
+[filesystem]
+
+import/blender/enabled=false

@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/fast_enemy.gd" id="1_fast"]
+[ext_resource type="Script" path="res://scripts/core/health_system.gd" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_collision"]
+size = Vector3(0.6, 1.2, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.6, 1.2, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yellow"]
+albedo_color = Color(0.8, 0.8, 0.2)
+
+[node name="FastEnemy" type="CharacterBody3D"]
+script = ExtResource("1_fast")
+max_health = 20.0
+move_speed = 6.0
+sprint_speed = 10.0
+attack_damage = 8.0
+attack_range = 1.2
+attack_cooldown = 0.5
+detection_range = 12.0
+evasion_chance = 0.3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_collision")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+material_override = SubResource("StandardMaterial3D_yellow")
+
+[node name="HealthSystem" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 20.0
+current_health = 20.0

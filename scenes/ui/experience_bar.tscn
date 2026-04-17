@@ -1,0 +1,100 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/experience_bar.gd" id="1_expbar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_bg"]
+bg_color = Color(0.1, 0.1, 0.2, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_fill"]
+bg_color = Color(0.4, 0.2, 0.8, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_level_badge"]
+bg_color = Color(0.6, 0.3, 1.0, 1)
+border_color = Color(0.8, 0.6, 1.0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="ExperienceBar" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 220.0
+offset_bottom = 90.0
+script = ExtResource("1_expbar")
+
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_exp_bg")
+
+[node name="ExperienceFill" type="Panel" parent="Background"]
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 196.0
+offset_bottom = -4.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_exp_fill")
+
+[node name="ExperienceText" type="Label" parent="Background"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -10.0
+offset_right = 40.0
+offset_bottom = 10.0
+text = "Nivel 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="LevelBadge" type="Panel" parent="."]
+anchor_left = 0.0
+anchor_top = 0.5
+anchor_right = 0.0
+anchor_bottom = 0.5
+offset_left = -35.0
+offset_top = -15.0
+offset_right = -5.0
+offset_bottom = 15.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_level_badge")
+
+[node name="LevelText" type="Label" parent="LevelBadge"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -10.0
+offset_right = 15.0
+offset_bottom = 10.0
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 1)

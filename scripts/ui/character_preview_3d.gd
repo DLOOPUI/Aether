@@ -13,7 +13,7 @@ func _ready() -> void:
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	
 	# Try to load a base model, otherwise use placeholder
-	load_character("res://assets/art/characters/base_character.glb")
+	load_character("res://assets/models/animations/characters.fbx")
 	
 	# Initial sync with current draft
 	update_preview()
@@ -23,20 +23,38 @@ func load_character(path: String) -> void:
 	if current_character:
 		current_character.queue_free()
 	
-	# Try to load the GLB scene
+	print("Attempting to load character from: ", path)
+	
+	# Try to load the 3D model (FBX/GLB/GLTF)
 	if FileAccess.file_exists(path):
+		print("File exists: ", path)
 		var scene = load(path)
 		if scene:
+			print("Scene loaded successfully, instantiating...")
 			current_character = scene.instantiate()
 			character_root.add_child(current_character)
+			print("Character model loaded and added to scene: ", path)
+			print("Character node type: ", current_character.get_class())
+			print("Character children: ", current_character.get_child_count())
+			
+			# Scale and position the character appropriately
+			if current_character is Node3D:
+				print("Character is Node3D, applying transformations...")
+				current_character.scale = Vector3(0.01, 0.01, 0.01)  # FBX often needs scaling
+				current_character.position = Vector3(0, -1, 0)  # Adjust height
+				print("Character scale: ", current_character.scale)
+				print("Character position: ", current_character.position)
+		else:
+			print("ERROR: Failed to load scene from: ", path)
 	else:
+		print("ERROR: File does not exist: ", path)
 		# Fallback: Create a placeholder character (Capsule)
 		var mesh_instance = MeshInstance3D.new()
 		mesh_instance.mesh = CapsuleMesh.new()
 		current_character = Node3D.new()
 		current_character.add_child(mesh_instance)
 		character_root.add_child(current_character)
-		print("Warning: Base character model not found, using placeholder.")
+		print("Warning: Character model not found, using placeholder.")
 
 	update_preview()
 

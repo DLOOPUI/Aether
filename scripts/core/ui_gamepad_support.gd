@@ -116,7 +116,7 @@ func _action_has_equivalent_key(action: StringName, candidate: InputEventKey) ->
 func _merge_joy_btn(action: StringName, button: int) -> void:
 	var ev := InputEventJoypadButton.new()
 	ev.device = -1
-	ev.button_index = button
+	ev.button_index = JoyButton(button)
 	if _action_has_joy_btn(action, button):
 		return
 	InputMap.action_add_event(action, ev)
@@ -126,25 +126,25 @@ func _action_has_joy_btn(action: StringName, button: int) -> bool:
 	for ev in InputMap.action_get_events(action):
 		if ev is InputEventJoypadButton:
 			var j := ev as InputEventJoypadButton
-			if j.button_index == button and j.device == -1:
+			if j.button_index == JoyButton(button) and j.device == -1:
 				return true
 	return false
 
 
-func _merge_axis(action: StringName, axis: int, sign: float) -> void:
+func _merge_axis(action: StringName, axis: int, axis_sign: float) -> void:
 	var ev := InputEventJoypadMotion.new()
 	ev.device = -1
-	ev.axis = axis
-	ev.axis_value = sign
-	if _action_has_axis(action, axis, sign):
+	ev.axis = JoyAxis(axis)
+	ev.axis_value = axis_sign
+	if _action_has_axis(action, axis, axis_sign):
 		return
 	InputMap.action_add_event(action, ev)
 
 
-func _action_has_axis(action: StringName, axis: int, sign: float) -> bool:
+func _action_has_axis(action: StringName, axis: int, axis_sign: float) -> bool:
 	for ev in InputMap.action_get_events(action):
 		if ev is InputEventJoypadMotion:
 			var m := ev as InputEventJoypadMotion
-			if m.axis == axis and is_equal_approx(m.axis_value, sign) and m.device == -1:
+			if m.axis == JoyAxis(axis) and is_equal_approx(m.axis_value, axis_sign) and m.device == -1:
 				return true
 	return false
